@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Color Prediction | BetX</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg-dark:    #0a0e1a;
+    --bg-card:    #111827;
+    --bg-panel:   #0d1424;
+    --accent:     #f0c040;
+    --accent2:    #e05c1a;
+    --green:      #22c55e;
+    --red:        #ef4444;
+    --violet:     #a855f7;
+    --blue:       #3b82f6;
+    --text:       #e2e8f0;
+    --muted:      #64748b;
+    --border:     #1e2d45;
+    --glow-green: 0 0 18px #22c55e99;
+    --glow-red:   0 0 18px #ef444499;
+    --glow-vio:   0 0 18px #a855f799;
+    --glow-gold:  0 0 18px #f0c04099;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg-dark);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 0%, #1a2a4a33 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 100%, #2a1a3a33 0%, transparent 60%);
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: #0d1424ee;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+    position: sticky; top:0; z-index:100;
+  }
+  .logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-shadow: var(--glow-gold);
+  }
+  .logo span { color: var(--accent2); }
+  nav { display:flex; gap:20px; }
+  nav a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transition: color .2s;
+  }
+  nav a:hover, nav a.active { color: var(--accent); }
+  .wallet-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 16px;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .wallet-box span { color: var(--accent); font-size:1.15rem; }
+
+  .game-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 14px 28px 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-panel);
+  }
+  .game-tab {
+    padding: 8px 22px;
+    border-radius: 8px 8px 0 0;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--muted);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .game-tab.active {
+    background: var(--bg-card);
+    border-color: var(--border);
+    border-bottom-color: var(--bg-card);
+    color: var(--accent);
+  }
+  .game-tab:hover:not(.active) { color: var(--text); }
+
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 18px;
+    padding: 20px 28px;
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+
+  .game-area {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .result-display {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .result-display::before {
+    content:'';
+    position:absolute; inset:0;
+    background: radial-gradient(ellipse at 50% 0%, #ffffff08, transparent 70%);
+    pointer-events:none;
+  }
+  .round-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+  .round-label {
+    font-size: .85rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .round-number {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    color: var(--accent);
+  }
+  .timer-bar-wrap {
+    width: 180px;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .timer-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 3px;
+    transition: width .9s linear;
+  }
+
+  .color-ball-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 160px;
+    margin: 10px 0;
+  }
+  .color-ball {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: var(--bg-panel);
+    border: 3px solid var(--border);
+    transition: all .5s cubic-bezier(.34,1.56,.64,1);
+    position: relative;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Orbitron',sans-serif;
+    font-size:1.1rem;
+    font-weight:700;
+    letter-spacing:1px;
+  }
+  .color-ball::after {
+    content:'';
+    position:absolute;
+    top:12px; left:22px;
+    width:22px; height:14px;
+    background: rgba(255,255,255,0.25);
+    border-radius:50%;
+    transform: rotate(-30deg);
+  }
+  .color-ball.green  { background:#22c55e; box-shadow: var(--glow-green); color:#fff; }
+  .color-ball.red    { background:#ef4444; box-shadow: var(--glow-red);   color:#fff; }
+  .color-ball.violet { background:#a855f7; box-shadow: var(--glow-vio);   color:#fff; }
+
+  .result-text {
+    font-family:'Orbitron',sans-serif;
+    font-size:1.4rem;
+    font-weight:900;
+    margin-top:10px;
+    min-height:32px;
+    letter-spacing:2px;
+    transition: all .3s;
+  }
+  .result-text.win  { color: var(--green); text-shadow: var(--glow-green); }
+  .result-text.lose { color: var(--red);   text-shadow: var(--glow-red); }
+
+  .history-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .hist-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    font-size: .65rem;
+    font-weight: 700;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff;
+    border: 2px solid rgba(255,255,255,0.15);
+    flex-shrink:0;
+  }
+  .hist-dot.green  { background:#22c55e88; border-color:#22c55e; }
+  .hist-dot.red    { background:#ef444488; border-color:#ef4444; }
+  .hist-dot.violet { background:#a855f788; border-color:#a855f7; }
+
+  .bet-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+  }
+  .bet-title {
+    font-family:'Orbitron',sans-serif;
+    font-size:.85rem;
+    letter-spacing:2px;
+    color:var(--muted);
+    text-transform:uppercase;
+    margin-bottom:16px;
+  }
+
+  .amount-section { margin-bottom:18px; }
+  .amount-label {
+    font-size:.85rem;
+    color:var(--muted);
+    letter-spacing:1px;
+    text-transform:uppercase;
+    margin-bottom:8px;
+    display:block;
+  }
+  .amount-input-wrap {
+    display:flex;
+    align-items:center;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow:hidden;
+  }
+  .amount-input-wrap span {
+    padding: 0 14px;
+    color: var(--accent);
+    font-size: 1.1rem;
+    font-weight:700;
+  }
+  .amount-input {
+    flex:1;
+    background:transparent;
+    border:none;
+    outline:none;
+    color:var(--text);
+    font-family:'Rajdhani',sans-serif;
+    font-size:1.15rem;
+    font-weight:700;
+    padding: 10px 0;
+  }
+  .quick-amounts {
+    display:flex;
+    gap:6px;
+    margin-top:8px;
+    flex-wrap:wrap;
+  }
+  .qa-btn {
+    padding:5px 14px;
+    background:var(--bg-panel);
+    border:1px solid var(--border);
+    border-radius:6px;
+    color:var(--muted);
+    font-family:'Rajdhani',sans-serif;
+    font-size:.9rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:all .2s;
+  }
+  .qa-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+  .color-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .color-btn {
+    padding: 16px 8px;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    font-family: 'Orbitron', sans-serif;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all .2s;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:5px;
+  }
+  .color-btn .mult {
+    font-size:.7rem;
+    opacity:.7;
+    font-family:'Rajdhani',sans-serif;
+    font-weight:600;
+    letter-spacing:0;
+  }
+  .color-btn.green-btn {
+    background:#22c55e22;
+    border-color:#22c55e55;
+    color:#22c55e;
+  }
+  .color-btn.green-btn:hover, .color-btn.green-btn.selected {
+    background:#22c55e33;
+    border-color:#22c55e;
+    box-shadow: var(--glow-green);
+  }
+  .color-btn.red-btn {
+    background:#ef444422;
+    border-color:#ef444455;
+    color:#ef4444;
+  }
+  .color-btn.red-btn:hover, .color-btn.red-btn.selected {
+    background:#ef444433;
+    border-color:#ef4444;
+    box-shadow: var(--glow-red);
+  }
+  .color-btn.violet-btn {
+    background:#a855f722;
+    border-color:#a855f755;
+    color:#a855f7;
+  }
+  .color-btn.violet-btn:hover, .color-btn.violet-btn.selected {
+    background:#a855f733;
+    border-color:#a855f7;
+    box-shadow: var(--glow-vio);
+  }
+  .color-btn:disabled { opacity:.4; cursor:not-allowed; }
+
+  .bet-btn {
+    width:100%;
+    padding:14px;
+    border-radius:10px;
+    border:none;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color:#111;
+    font-family:'Orbitron',sans-serif;
+    font-size:1rem;
+    font-weight:900;
+    letter-spacing:2px;
+    cursor:pointer;
+    transition:all .2s;
+    text-transform:uppercase;
+  }
+  .bet-btn:hover:not(:disabled) {
+    transform:translateY(-2px);
+    box-shadow: 0 6px 24px #f0c04055;
+  }
+  .bet-btn:disabled {
+    opacity:.4;
+    cursor:not-allowed;
+    transform:none;
+  }
+
+  .selection-info {
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:14px;
+    font-size:.9rem;
+  }
+  .sel-label { color:var(--muted); }
+  .sel-value { font-weight:700; }
+  .sel-value.green  { color:var(--green); }
+  .sel-value.red    { color:var(--red); }
+  .sel-value.violet { color:var(--violet); }
+
+  .sidebar { display:flex; flex-direction:column; gap:16px; }
+
+  .side-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .side-card-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    font-family:'Orbitron',sans-serif;
+    font-size:.8rem;
+    letter-spacing:2px;
+    color:var(--accent);
+    text-transform:uppercase;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .side-card-header .live-dot {
+    width:8px; height:8px;
+    border-radius:50%;
+    background:var(--green);
+    box-shadow: var(--glow-green);
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%,100%{opacity:1;transform:scale(1)}
+    50%{opacity:.5;transform:scale(1.3)}
+  }
+
+  .bet-list { max-height:260px; overflow-y:auto; }
+  .bet-list::-webkit-scrollbar { width:4px; }
+  .bet-list::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+  .bet-row {
+    display:grid;
+    grid-template-columns:1fr auto auto;
+    gap:8px;
+    padding:10px 18px;
+    border-bottom:1px solid #ffffff08;
+    font-size:.88rem;
+    align-items:center;
+    transition: background .2s;
+  }
+  .bet-row:hover { background:#ffffff05; }
+  .bet-row .player { color:var(--muted); font-weight:600; }
+  .bet-row .dot {
+    width:14px; height:14px;
+    border-radius:50%;
+    flex-shrink:0;
+  }
+  .dot.green  { background:var(--green); }
+  .dot.red    { background:var(--red); }
+  .dot.violet { background:var(--violet); }
+  .bet-row .amount { font-weight:700; color:var(--accent); text-align:right; }
+
+  .stats-grid {
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:1px;
+    background:var(--border);
+  }
+  .stat-cell {
+    background:var(--bg-card);
+    padding:14px 10px;
+    text-align:center;
+  }
+  .stat-num {
+    font-family:'Orbitron',sans-serif;
+    font-size:1.1rem;
+    font-weight:700;
+    margin-bottom:4px;
+  }
+  .stat-num.green  { color:var(--green); }
+  .stat-num.red    { color:var(--red); }
+  .stat-num.violet { color:var(--violet); }
+  .stat-lbl { font-size:.75rem; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
+
+  .my-bets-table { width:100%; border-collapse:collapse; font-size:.88rem; }
+  .my-bets-table th {
+    padding:10px 16px;
+    text-align:left;
+    color:var(--muted);
+    font-size:.75rem;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    font-weight:600;
+    border-bottom:1px solid var(--border);
+  }
+  .my-bets-table td {
+    padding:10px 16px;
+    border-bottom:1px solid #ffffff08;
+  }
+  .my-bets-table tr:last-child td { border-bottom:none; }
+  .badge {
+    padding:3px 10px;
+    border-radius:20px;
+    font-size:.78rem;
+    font-weight:700;
+  }
+  .badge.win    { background:#22c55e22; color:#22c55e; border:1px solid #22c55e55; }
+  .badge.lose   { background:#ef444422; color:#ef4444; border:1px solid #ef444455; }
+  .badge.pending{ background:#f0c04022; color:#f0c040; border:1px solid #f0c04055; }
+
+  .spinning-overlay {
+    position:fixed; inset:0;
+    background:#000000cc;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    z-index:999;
+    backdrop-filter:blur(6px);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .3s;
+  }
+  .spinning-overlay.show { opacity:1; pointer-events:all; }
+  .spin-ball {
+    width:100px; height:100px;
+    border-radius:50%;
+    animation: spinBall 0.4s linear infinite;
+    margin-bottom:20px;
+    position:relative;
+  }
+  .spin-ball::after {
+    content:'';
+    position:absolute;
+    top:10px; left:18px;
+    width:18px; height:12px;
+    background:rgba(255,255,255,0.3);
+    border-radius:50%;
+    transform:rotate(-30deg);
+  }
+  @keyframes spinBall {
+    0%   { transform:rotate(0deg); }
+    100% { transform:rotate(360deg); }
+  }
+  .spin-text {
+    font-family:'Orbitron',sans-serif;
+    font-size:1.2rem;
+    letter-spacing:3px;
+    color:var(--accent);
+    animation: blink .8s infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+
+  .result-popup {
+    position:fixed; inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:1000;
+    pointer-events:none;
+    opacity:0;
+    transition:opacity .3s;
+  }
+  .result-popup.show { opacity:1; pointer-events:all; }
+  .popup-box {
+    background:var(--bg-card);
+    border:2px solid var(--border);
+    border-radius:20px;
+    padding:40px 60px;
+    text-align:center;
+    animation: popIn .4s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes popIn {
+    from { transform:scale(.5); opacity:0; }
+    to   { transform:scale(1);  opacity:1; }
+  }
+  .popup-box.win-box  { border-color:var(--green); box-shadow:var(--glow-green); }
+  .popup-box.lose-box { border-color:var(--red);   box-shadow:var(--glow-red); }
+  .popup-emoji { font-size:3rem; margin-bottom:10px; }
+  .popup-title {
+    font-family:'Orbitron',sans-serif;
+    font-size:1.8rem;
+    font-weight:900;
+    letter-spacing:3px;
+    margin-bottom:6px;
+  }
+  .popup-title.win  { color:var(--green); text-shadow:var(--glow-green); }
+  .popup-title.lose { color:var(--red);   text-shadow:var(--glow-red); }
+  .popup-amount { font-size:1.2rem; color:var(--text); margin-bottom:20px; }
+  .popup-close {
+    padding:10px 30px;
+    border-radius:8px;
+    border:none;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#111;
+    font-family:'Orbitron',sans-serif;
+    font-size:.85rem;
+    font-weight:900;
+    cursor:pointer;
+    letter-spacing:2px;
+  }
+
+  @media(max-width:900px){
+    .main { grid-template-columns:1fr; }
+    nav { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">BET<span>X</span></div>
+  <nav>
+    <a href="#">Home</a>
+    <a href="#">Fantasy</a>
+    <a href="#" class="active">Games</a>
+    <a href="#">Wallet</a>
+  </nav>
+  <div class="wallet-box">
+    💰 Balance: <span id="balanceDisplay">₹1,000.00</span>
+  </div>
+</header>
+
+<div class="game-tabs">
+  <button class="game-tab" onclick="location.href='aviator.html'">✈️ Aviator</button>
+  <button class="game-tab" onclick="location.href='mines.html'">💣 Mines</button>
+  <button class="game-tab active">🎨 Color</button>
+</div>
+
+<div class="main">
+  <div class="game-area">
+
+    <div class="result-display">
+      <div class="round-info">
+        <div>
+          <div class="round-label">Round</div>
+          <div class="round-number" id="roundNum">#1042</div>
+        </div>
+        <div style="text-align:center">
+          <div class="round-label" id="phaseLabel">PLACE YOUR BET</div>
+          <div style="margin-top:6px; font-family:'Orbitron',sans-serif; font-size:1.2rem; color:var(--accent)" id="countdown">30</div>
+        </div>
+        <div>
+          <div class="round-label" style="text-align:right">Timer</div>
+          <div class="timer-bar-wrap" style="margin-top:6px">
+            <div class="timer-bar" id="timerBar" style="width:100%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="color-ball-wrap">
+        <div class="color-ball" id="mainBall">?</div>
+      </div>
+
+      <div class="result-text" id="resultText"></div>
+      <div class="history-row" id="historyRow"></div>
+    </div>
+
+    <div class="bet-panel">
+      <div class="bet-title">Place Your Bet</div>
+
+      <div class="amount-section">
+        <span class="amount-label">Bet Amount</span>
+        <div class="amount-input-wrap">
+          <span>₹</span>
+          <input class="amount-input" id="betAmount" type="number" value="50" min="10" max="10000"/>
+        </div>
+        <div class="quick-amounts">
+          <button class="qa-btn" onclick="setAmt(10)">+10</button>
+          <button class="qa-btn" onclick="setAmt(50)">+50</button>
+          <button class="qa-btn" onclick="setAmt(100)">+100</button>
+          <button class="qa-btn" onclick="setAmt(500)">+500</button>
+          <button class="qa-btn" onclick="document.getElementById('betAmount').value=balance">MAX</button>
+        </div>
+      </div>
+
+      <div class="selection-info">
+        <span class="sel-label">Selected:</span>
+        <span class="sel-value" id="selColor">— None —</span>
+      </div>
+      <div class="selection-info">
+        <span class="sel-label">Potential Win:</span>
+        <span class="sel-value" id="potentialWin" style="color:var(--accent)">₹0.00</span>
+      </div>
+
+      <div class="color-btns">
+        <button class="color-btn green-btn" id="btnGreen" onclick="selectColor('green')">
+          🟢 GREEN
+          <span class="mult">2× Payout</span>
+        </button>
+        <button class="color-btn violet-btn" id="btnViolet" onclick="selectColor('violet')">
+          🟣 VIOLET
+          <span class="mult">2× Payout</span>
+        </button>
+        <button class="color-btn red-btn" id="btnRed" onclick="selectColor('red')">
+          🔴 RED
+          <span class="mult">2× Payout</span>
+        </button>
+      </div>
+
+      <button class="bet-btn" id="betBtn" onclick="placeBet()">PLACE BET</button>
+    </div>
+
+    <div class="side-card">
+      <div class="side-card-header">My Bet History</div>
+      <table class="my-bets-table">
+        <thead>
+          <tr>
+            <th>Round</th>
+            <th>Color</th>
+            <th>Amount</th>
+            <th>Result</th>
+            <th>Profit</th>
+          </tr>
+        </thead>
+        <tbody id="myBetsBody">
+          <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">No bets yet</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="sidebar">
+
+    <div class="side-card">
+      <div class="side-card-header">
+        Live Stats
+        <div class="live-dot"></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-cell">
+          <div class="stat-num green" id="statGreen">48%</div>
+          <div class="stat-lbl">Green</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num violet" id="statViolet">10%</div>
+          <div class="stat-lbl">Violet</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num red" id="statRed">42%</div>
+          <div class="stat-lbl">Red</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-card">
+      <div class="side-card-header">
+        Live Bets
+        <div class="live-dot"></div>
+      </div>
+      <div class="bet-list" id="liveBetList"></div>
+    </div>
+
+    <div class="side-card">
+      <div class="side-card-header">Recent Results</div>
+      <div style="padding:16px">
+        <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:6px" id="recentGrid"></div>
+      </div>
+    </div>
+
+    <div class="side-card">
+      <div class="side-card-header">How To Play</div>
+      <div style="padding:16px; line-height:1.8; font-size:.9rem; color:var(--muted)">
+        
+        <p>🟢 <b style="color:var(--green)">Green</b> — Pays <b style="color:var(--accent)">2×</b></p>
+        <p>🔴 <b style="color:var(--red)">Red</b> — Pays <b style="color:var(--accent)">2×</b></p>
+        
+        <p>🟣 <b style="color:var(--violet)">Violet</b> — Pays <b style="color:var(--accent)">2×</b></p>
+        <hr style="border-color:var(--border);margin:10px 0"/>
+        <p>🕐 Each round lasts <b style="color:var(--text)">30 seconds</b></p>
+        <p>✅ Bet before the timer ends</p>
+        <p>🎲 Result is random & fair</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="spinning-overlay" id="spinOverlay">
+  <div class="spin-ball" id="spinBall" style="background:conic-gradient(#22c55e,#ef4444,#a855f7,#22c55e)"></div>
+  <div class="spin-text">DRAWING RESULT...</div>
+</div>
+
+<div class="result-popup" id="resultPopup">
+  <div class="popup-box" id="popupBox">
+    <div class="popup-emoji" id="popupEmoji">🎉</div>
+    <div class="popup-title" id="popupTitle">YOU WIN!</div>
+    <div class="popup-amount" id="popupAmount">+₹100</div>
+    <button class="popup-close" onclick="closePopup()">CONTINUE</button>
+  </div>
+</div>
+
+<script>
+
+    // ─── SOUND ENGINE (Web Audio API — no files needed) ───
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let ctx;
+
+function getCtx() {
+  if (!ctx) ctx = new AudioCtx();
+  return ctx;
+}
+
+function playTick() {
+  const a = getCtx();
+  const o = a.createOscillator();
+  const g = a.createGain();
+  o.connect(g); g.connect(a.destination);
+  o.frequency.value = 800;
+  g.gain.setValueAtTime(0.1, a.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + 0.08);
+  o.start(); o.stop(a.currentTime + 0.08);
+}
+
+function playLock() {
+  const a = getCtx();
+  const o = a.createOscillator();
+  const g = a.createGain();
+  o.connect(g); g.connect(a.destination);
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(400, a.currentTime);
+  o.frequency.exponentialRampToValueAtTime(150, a.currentTime + 0.3);
+  g.gain.setValueAtTime(0.2, a.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + 0.3);
+  o.start(); o.stop(a.currentTime + 0.3);
+}
+
+function playSpin() {
+  const a = getCtx();
+  for (let i = 0; i < 8; i++) {
+    const o = a.createOscillator();
+    const g = a.createGain();
+    o.connect(g); g.connect(a.destination);
+    o.type = 'sine';
+    o.frequency.value = 200 + i * 80;
+    g.gain.setValueAtTime(0, a.currentTime + i * 0.12);
+    g.gain.linearRampToValueAtTime(0.15, a.currentTime + i * 0.12 + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + i * 0.12 + 0.2);
+    o.start(a.currentTime + i * 0.12);
+    o.stop(a.currentTime + i * 0.12 + 0.2);
+  }
+}
+
+function playWin() {
+  const a = getCtx();
+  [523, 659, 784, 1047].forEach((freq, i) => {
+    const o = a.createOscillator();
+    const g = a.createGain();
+    o.connect(g); g.connect(a.destination);
+    o.type = 'sine';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0, a.currentTime + i * 0.12);
+    g.gain.linearRampToValueAtTime(0.25, a.currentTime + i * 0.12 + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + i * 0.12 + 0.4);
+    o.start(a.currentTime + i * 0.12);
+    o.stop(a.currentTime + i * 0.12 + 0.5);
+  });
+}
+
+function playLose() {
+  const a = getCtx();
+  [400, 300, 200].forEach((freq, i) => {
+    const o = a.createOscillator();
+    const g = a.createGain();
+    o.connect(g); g.connect(a.destination);
+    o.type = 'sawtooth';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0, a.currentTime + i * 0.15);
+    g.gain.linearRampToValueAtTime(0.2, a.currentTime + i * 0.15 + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + i * 0.15 + 0.3);
+    o.start(a.currentTime + i * 0.15);
+    o.stop(a.currentTime + i * 0.15 + 0.35);
+  });
+}
+
+  let balance     = 1000;
+  let selectedColor = null;
+  let betPlaced   = false;
+  let betAmount   = 50;
+  let betColor    = null;
+  let roundNum    = 1042;
+  let countdown   = 30;
+  let phase       = 'betting';
+  let history     = [];
+  let myBets      = [];
+  let greenCount=0, redCount=0, violetCount=0;
+
+  const PAYOUTS = { green:2, red:2, violet:2 };
+  const FIRST = ['Rahul','Priya','Amit','Sneha','Vijay','Pooja','Arjun','Kavya','Rohan','Meera','Kiran','Suresh','Anita','Deepak','Nisha','Ravi','Swati','Manoj','Divya','Arun'];
+const LAST  = ['K','S','M','R','P','G','T','B','V','N','J','C','D','H','L'];
+
+function randomName() {
+  const first = FIRST[Math.floor(Math.random() * FIRST.length)];
+  const last  = LAST[Math.floor(Math.random() * LAST.length)];
+  const num   = Math.floor(Math.random() * 900) + 100; // 3-digit number
+  return first + last + '***' + num;
+}
+  const ALL_COLORS = ['green', 'red', 'violet'];
+
+  updateBalance();
+  startRound();
+  setInterval(liveBetTick, 1800);
+  generateRecentGrid();
+
+  function startRound() {
+    countdown = 30;
+    phase     = 'betting';
+    betPlaced = false;
+    selectedColor = null;
+    betColor  = null;
+    updateSelectionUI();
+    updateBtnStates(false);
+    document.getElementById('phaseLabel').textContent = 'PLACE YOUR BET';
+    document.getElementById('mainBall').className = 'color-ball';
+    document.getElementById('mainBall').textContent = '?';
+    document.getElementById('resultText').textContent = '';
+    document.getElementById('resultText').className = 'result-text';
+    document.getElementById('roundNum').textContent = '#' + roundNum;
+    document.getElementById('countdown').style.color = 'var(--accent)';
+    tickTimer();
+  }
+
+  function tickTimer() {
+    if (phase !== 'betting') return;
+    const pct = (countdown / 30) * 100;
+    document.getElementById('timerBar').style.width = pct + '%';
+    document.getElementById('countdown').textContent = countdown;
+    if (countdown <= 5 && !betPlaced) {
+      updateBtnStates(true);
+      document.getElementById('betBtn').textContent = '🔒 BETTING CLOSED';
+      document.getElementById('phaseLabel').textContent = 'LOCKED';
+      document.getElementById('countdown').style.color = 'var(--red)';
+      playLock();
+    }
+    if (countdown <= 0) {
+      phase = 'spinning';
+      document.getElementById('phaseLabel').textContent = 'DRAWING...';
+      updateBtnStates(true);
+      runSpin();
+      return;
+    }
+    countdown--;
+    playTick();
+    setTimeout(tickTimer, 1000);
+  }
+
+  function runSpin() {
+    document.getElementById('spinOverlay').classList.add('show');
+    playSpin();
+    const spinBall = document.getElementById('spinBall');
+    let t=0;
+    const colors=['#22c55e','#ef4444','#a855f7'];
+    const cycleInterval = setInterval(()=>{
+      spinBall.style.background = `conic-gradient(${colors[t%3]},${colors[(t+1)%3]},${colors[(t+2)%3]},${colors[t%3]})`;
+      t++;
+    },150);
+    setTimeout(()=>{
+      clearInterval(cycleInterval);
+      document.getElementById('spinOverlay').classList.remove('show');
+
+      const result = pickResult();
+      showResult(result);
+    }, 3000);
+  }
+
+  // ─── RIGGED RESULT FUNCTION ───
+  // Win chance: 0.00001 (0.001%) — the outcome almost always differs from the user's pick.
+  // If no bet placed, just pick a fair random color for display.
+  function pickResult() {
+    if (!betPlaced || !betColor) {
+      // No bet — return a normal random color for display
+      return fairRandom();
+    }
+
+    const WIN_CHANCE = 0.00001; // 0.001%
+    const roll = Math.random();
+
+    if (roll < WIN_CHANCE) {
+      // Rare win — return exactly what the user picked
+      return betColor;
+    } else {
+      // ~99.999% of the time — return a color that is NOT what the user picked
+      const others = ALL_COLORS.filter(c => c !== betColor);
+      return others[Math.floor(Math.random() * others.length)];
+    }
+  }
+
+  function fairRandom() {
+    const r = Math.random();
+    if (r < 0.45) return 'green';
+    if (r < 0.90) return 'red';
+    return 'violet';
+  }
+
+  function showResult(color) {
+    phase = 'result';
+    const ball = document.getElementById('mainBall');
+    const labels = { green:'GREEN', red:'RED', violet:'VIOLET' };
+    ball.className = 'color-ball ' + color;
+    ball.textContent = labels[color];
+
+    history.unshift(color);
+    if (history.length > 20) history.pop();
+    if (color==='green') greenCount++;
+    else if (color==='red') redCount++;
+    else violetCount++;
+    updateHistory();
+    updateStats();
+    generateRecentGrid();
+
+    if (betPlaced && betColor === color) {
+      const payout = betAmount * PAYOUTS[color];
+      playWin();
+      const profit = payout - betAmount;
+      balance += payout;
+      updateBalance();
+      document.getElementById('resultText').textContent = '🎉 YOU WIN ₹' + payout.toFixed(2);
+      document.getElementById('resultText').className = 'result-text win';
+      addMyBet(roundNum, betColor, betAmount, color, profit, true);
+      showPopup(true, payout, profit);
+    } else if (betPlaced) {
+        playLose();
+      document.getElementById('resultText').textContent = '❌ YOU LOSE';
+      document.getElementById('resultText').className = 'result-text lose';
+      addMyBet(roundNum, betColor, betAmount, color, -betAmount, false);
+      showPopup(false, 0, -betAmount);
+    }
+
+    roundNum++;
+    setTimeout(()=>{ startRound(); }, 4000);
+  }
+
+  function selectColor(c) {
+    if (phase !== 'betting') return;
+    selectedColor = c;
+    ['green','red','violet'].forEach(x=>{
+      document.getElementById('btn'+cap(x)).classList.remove('selected');
+    });
+    document.getElementById('btn'+cap(c)).classList.add('selected');
+    updateSelectionUI();
+  }
+
+  function placeBet() {
+    if (!selectedColor) { alert('Please select a color first!'); return; }
+    betAmount = parseFloat(document.getElementById('betAmount').value) || 50;
+    if (betAmount < 10)    { alert('Minimum bet is ₹10'); return; }
+    if (betAmount > balance){ alert('Insufficient balance!'); return; }
+    betPlaced = true;
+    betColor  = selectedColor;
+    balance  -= betAmount;
+    updateBalance();
+    document.getElementById('betBtn').textContent = '✅ BET PLACED!';
+    document.getElementById('betBtn').disabled = true;
+    document.querySelectorAll('.color-btn').forEach(b=>b.disabled=true);
+  }
+
+  function setAmt(n) {
+    const inp = document.getElementById('betAmount');
+    inp.value = Math.min(parseFloat(inp.value||0)+n, balance);
+    updateSelectionUI();
+  }
+
+  function updateSelectionUI() {
+    const colorLabels = { green:'🟢 GREEN', red:'🔴 RED', violet:'🟣 VIOLET' };
+    const el = document.getElementById('selColor');
+    if (selectedColor) {
+      el.textContent = colorLabels[selectedColor];
+      el.className = 'sel-value ' + selectedColor;
+    } else {
+      el.textContent = '— None —';
+      el.className = 'sel-value';
+    }
+    const amt = parseFloat(document.getElementById('betAmount').value)||0;
+    const pw  = selectedColor ? (amt * PAYOUTS[selectedColor]).toFixed(2) : '0.00';
+    document.getElementById('potentialWin').textContent = '₹' + pw;
+  }
+
+  document.getElementById('betAmount').addEventListener('input', updateSelectionUI);
+
+  function updateBtnStates(disable) {
+    document.querySelectorAll('.color-btn').forEach(b=>b.disabled=disable);
+    const betBtn = document.getElementById('betBtn');
+    if (!disable) {
+      betBtn.disabled = false;
+      betBtn.textContent = 'PLACE BET';
+    }
+  }
+
+  function showPopup(win, payout, profit) {
+    const box   = document.getElementById('popupBox');
+    const title = document.getElementById('popupTitle');
+    const amt   = document.getElementById('popupAmount');
+    const emoji = document.getElementById('popupEmoji');
+    if (win) {
+      box.className   = 'popup-box win-box';
+      title.className = 'popup-title win';
+      title.textContent = 'YOU WIN!';
+      emoji.textContent = '🎉';
+      amt.textContent = '+₹' + payout.toFixed(2) + '  (Profit: +₹' + profit.toFixed(2)+')';
+    } else {
+      box.className   = 'popup-box lose-box';
+      title.className = 'popup-title lose';
+      title.textContent = 'YOU LOSE!';
+      emoji.textContent = '😢';
+      amt.textContent = '-₹' + Math.abs(profit).toFixed(2);
+    }
+    document.getElementById('resultPopup').classList.add('show');
+  }
+
+  function closePopup() {
+    document.getElementById('resultPopup').classList.remove('show');
+  }
+
+  function updateHistory() {
+    const row = document.getElementById('historyRow');
+    row.innerHTML = history.slice(0,15).map(c=>`
+      <div class="hist-dot ${c}">${c[0].toUpperCase()}</div>
+    `).join('');
+  }
+
+  function generateRecentGrid() {
+    const grid = document.getElementById('recentGrid');
+    const all  = ['green','red','violet'];
+    let html='';
+    for(let i=0;i<21;i++){
+      const c = history[i] || all[Math.floor(Math.random()*3)];
+      const icons={green:'G',red:'R',violet:'V'};
+      html+=`<div class="hist-dot ${c}" style="width:100%;border-radius:6px;height:28px">${icons[c]}</div>`;
+    }
+    grid.innerHTML=html;
+  }
+
+  function updateStats() {
+    const total = greenCount+redCount+violetCount||1;
+    document.getElementById('statGreen').textContent  = Math.round(greenCount/total*100)+'%';
+    document.getElementById('statRed').textContent    = Math.round(redCount/total*100)+'%';
+    document.getElementById('statViolet').textContent = Math.round(violetCount/total*100)+'%';
+  }
+
+  function addMyBet(round, color, amount, result, profit, win) {
+    myBets.unshift({round, color, amount, result, profit, win});
+    if(myBets.length>10) myBets.pop();
+    renderMyBets();
+  }
+
+  function renderMyBets() {
+    const tbody = document.getElementById('myBetsBody');
+    const labels={green:'🟢 Green',red:'🔴 Red',violet:'🟣 Violet'};
+    tbody.innerHTML = myBets.map(b=>`
+      <tr>
+        <td>#${b.round}</td>
+        <td>${labels[b.color]}</td>
+        <td>₹${b.amount}</td>
+        <td>${labels[b.result]}</td>
+        <td style="color:${b.win?'var(--green)':'var(--red)'}">
+          ${b.win?'+':''}₹${Math.abs(b.profit).toFixed(2)}
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function liveBetTick() {
+    const color  = fairRandom();
+    const name = randomName();
+
+    const amount = [10,20,50,100,200,500][Math.floor(Math.random()*6)];
+    const list   = document.getElementById('liveBetList');
+    const row    = document.createElement('div');
+    row.className = 'bet-row';
+    row.innerHTML = `
+      <span class="player">${name}</span>
+      <div class="dot ${color}"></div>
+      <span class="amount">₹${amount}</span>
+    `;
+    list.prepend(row);
+    if(list.children.length > 12) list.lastChild.remove();
+  }
+
+  function updateBalance() {
+    document.getElementById('balanceDisplay').textContent = '₹'+balance.toFixed(2);
+  }
+  function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+  for(let i=0;i<6;i++) liveBetTick();
+</script>
+</body>
+</html>

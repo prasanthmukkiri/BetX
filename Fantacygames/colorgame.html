@@ -660,7 +660,7 @@
         <span class="amount-label">Bet Amount</span>
         <div class="amount-input-wrap">
           <span>₹</span>
-          <input class="amount-input" id="betAmount" type="number" value="50" min="10" max="10000"/>
+          <input class="amount-input" id="betAmount" type="number" value="50" min="10" max="10000" step="1"/>
         </div>
         <div class="quick-amounts">
           <button class="qa-btn" onclick="setAmt(10)">+10</button>
@@ -1040,7 +1040,7 @@ function randomName() {
 
   function placeBet() {
     if (!selectedColor) { alert('Please select a color first!'); return; }
-    betAmount = parseFloat(document.getElementById('betAmount').value) || 50;
+    betAmount = Math.floor(parseFloat(document.getElementById('betAmount').value) || 50);
     if (betAmount < 10)    { alert('Minimum bet is ₹10'); return; }
     if (betAmount > balance){ alert('Insufficient balance!'); return; }
     betPlaced = true;
@@ -1052,11 +1052,13 @@ function randomName() {
     document.querySelectorAll('.color-btn').forEach(b=>b.disabled=true);
   }
 
-  function setAmt(n) {
-    const inp = document.getElementById('betAmount');
-    inp.value = Math.min(parseFloat(inp.value||0)+n, balance);
-    updateSelectionUI();
-  }
+  
+    function setAmt(n) {
+  const inp = document.getElementById('betAmount');
+  inp.value = Math.floor(Math.min(parseFloat(inp.value||0)+n, balance));
+  updateSelectionUI();
+}
+  
 
   function updateSelectionUI() {
     const colorLabels = { green:'🟢 GREEN', red:'🔴 RED', violet:'🟣 VIOLET' };
@@ -1181,5 +1183,7 @@ function randomName() {
 
   for(let i=0;i<6;i++) liveBetTick();
 </script>
+
+
 </body>
 </html>

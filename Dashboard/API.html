@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BetX — API Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Teko:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+    --black:#080808;--dark:#111111;--card:#181818;--card2:#1e1e1e;
+    --gold:#D4A017;--gold-light:#F5C842;--gold-dim:#9A720F;
+    --red:#E63946;--green:#2ecc71;--blue:#3b82f6;
+    --white:#F5F5F0;--muted:#888880;
+    --border:rgba(212,160,23,0.18);--border2:rgba(255,255,255,0.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--white);min-height:100vh;}
+.bg-layer{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 80% 60% at 70% 30%,rgba(212,160,23,0.06) 0%,transparent 65%),radial-gradient(ellipse 60% 50% at 20% 80%,rgba(230,57,70,0.04) 0%,transparent 60%),var(--black);}
+.bg-grid{position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(212,160,23,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(212,160,23,0.03) 1px,transparent 1px);background-size:60px 60px;}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(8,8,8,0.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 40px;height:56px;display:flex;align-items:center;gap:14px;}
+.topbar-logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--gold);letter-spacing:3px;}
+.topbar-logo span{color:var(--white);}
+.topbar-badge{background:rgba(230,57,70,0.15);border:1px solid rgba(230,57,70,0.35);color:var(--red);font-size:0.68rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:4px;}
+.topbar-sep{width:1px;height:20px;background:var(--border);margin:0 4px;}
+.topbar-page{font-size:0.85rem;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.topbar-page span{color:var(--gold);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.back-btn{background:transparent;border:1px solid rgba(255,255,255,0.12);color:var(--muted);padding:7px 18px;border-radius:6px;cursor:pointer;font-size:0.82rem;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.back-btn:hover{border-color:var(--gold);color:var(--gold);}
+
+/* ACCESS GATE */
+#accessGate{position:relative;z-index:1;min-height:calc(100vh - 56px);display:flex;align-items:center;justify-content:center;}
+.gate-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px 36px;width:400px;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,0.6);}
+.gate-icon{font-size:3rem;margin-bottom:16px;}
+.gate-title{font-family:'Teko',sans-serif;font-size:1.6rem;letter-spacing:1px;margin-bottom:8px;}
+.gate-sub{font-size:0.85rem;color:var(--muted);margin-bottom:28px;}
+.gate-btn{width:100%;padding:13px;background:var(--gold);color:var(--black);font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:all 0.2s;}
+.gate-btn:hover{background:var(--gold-light);}
+
+/* MAIN PAGE */
+#mainPage{display:none;position:relative;z-index:1;padding:32px 40px 60px;max-width:1000px;margin:0 auto;}
+
+/* PAGE HEADER */
+.page-header{margin-bottom:32px;}
+.page-title{font-family:'Teko',sans-serif;font-size:2rem;letter-spacing:1px;display:flex;align-items:center;gap:12px;margin-bottom:6px;}
+.page-sub{font-size:0.88rem;color:var(--muted);}
+
+/* STATUS BAR */
+.status-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px;}
+.status-card{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;transition:border-color 0.2s;}
+.status-card.connected{border-color:rgba(46,204,113,0.3);}
+.status-card.disconnected{border-color:rgba(230,57,70,0.3);}
+.status-card.warning{border-color:rgba(212,160,23,0.3);}
+.s-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.s-dot.green{background:var(--green);box-shadow:0 0 8px rgba(46,204,113,0.5);animation:blink 2s infinite;}
+.s-dot.red{background:var(--red);}
+.s-dot.yellow{background:var(--gold);animation:blink 1.5s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
+.s-info{}
+.s-label{font-size:0.7rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+.s-val{font-size:0.9rem;font-weight:600;}
+
+/* SECTIONS */
+.section{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:26px;margin-bottom:20px;transition:border-color 0.2s;}
+.section:hover{border-color:rgba(212,160,23,0.2);}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--border2);}
+.section-name{display:flex;align-items:center;gap:12px;}
+.section-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
+.section-icon.blue{background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);}
+.section-icon.gold{background:rgba(212,160,23,0.1);border:1px solid var(--border);}
+.section-icon.green{background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.25);}
+.section-title2{font-family:'Teko',sans-serif;font-size:1.3rem;letter-spacing:0.5px;}
+.section-desc{font-size:0.75rem;color:var(--muted);margin-top:2px;}
+.section-badge{font-size:0.65rem;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;}
+.badge-active{background:rgba(46,204,113,0.12);color:var(--green);border:1px solid rgba(46,204,113,0.3);}
+.badge-inactive{background:rgba(136,136,128,0.1);color:var(--muted);border:1px solid rgba(136,136,128,0.2);}
+.badge-live{background:rgba(230,57,70,0.12);color:var(--red);border:1px solid rgba(230,57,70,0.3);}
+
+/* FORM ELEMENTS */
+.field{margin-bottom:18px;}
+.field-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+.label-text{font-size:0.75rem;font-weight:700;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;}
+.label-hint{font-size:0.7rem;color:var(--muted);}
+.label-hint a{color:var(--gold);text-decoration:none;}
+.label-hint a:hover{text-decoration:underline;}
+.input-wrap{position:relative;display:flex;align-items:center;gap:8px;}
+.api-input{flex:1;background:var(--card2);border:1px solid var(--border2);color:var(--white);font-family:'DM Sans',sans-serif;font-size:0.9rem;padding:11px 44px 11px 14px;border-radius:8px;outline:none;transition:border-color 0.2s;letter-spacing:0.5px;}
+.api-input:focus{border-color:var(--gold);background:rgba(212,160,23,0.04);}
+.api-input::placeholder{color:rgba(136,136,128,0.4);}
+.api-input.valid{border-color:rgba(46,204,113,0.5);}
+.api-input.invalid{border-color:rgba(230,57,70,0.5);}
+.eye-btn{position:absolute;right:12px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:0;transition:color 0.2s;}
+.eye-btn:hover{color:var(--gold);}
+.copy-btn{background:var(--card2);border:1px solid var(--border2);color:var(--muted);padding:11px 14px;border-radius:8px;cursor:pointer;font-size:0.85rem;transition:all 0.2s;flex-shrink:0;}
+.copy-btn:hover{border-color:var(--gold);color:var(--gold);}
+
+.test-btn{padding:9px 20px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);color:#60a5fa;font-size:0.8rem;font-weight:700;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.test-btn:hover{background:rgba(59,130,246,0.2);}
+.test-result{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:0.8rem;display:none;}
+.test-result.success{background:rgba(46,204,113,0.08);border:1px solid rgba(46,204,113,0.25);color:#86efac;}
+.test-result.error{background:rgba(230,57,70,0.08);border:1px solid rgba(230,57,70,0.25);color:#fca5a5;}
+
+/* SELECT / TOGGLE */
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.select-input{width:100%;background:var(--card2);border:1px solid var(--border2);color:var(--white);font-family:'DM Sans',sans-serif;font-size:0.9rem;padding:11px 14px;border-radius:8px;outline:none;cursor:pointer;transition:border-color 0.2s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888880' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;}
+.select-input:focus{border-color:var(--gold);}
+.select-input option{background:var(--card2);}
+
+/* TOGGLE SWITCH */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border2);}
+.toggle-row:last-child{border-bottom:none;padding-bottom:0;}
+.toggle-info{}
+.toggle-name{font-size:0.9rem;font-weight:600;margin-bottom:3px;}
+.toggle-desc{font-size:0.75rem;color:var(--muted);}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:var(--card2);border:1px solid var(--border2);border-radius:24px;cursor:pointer;transition:all 0.25s;}
+.toggle-slider::before{content:'';position:absolute;width:18px;height:18px;background:var(--muted);border-radius:50%;top:2px;left:2px;transition:all 0.25s;}
+.toggle input:checked+.toggle-slider{background:rgba(46,204,113,0.15);border-color:rgba(46,204,113,0.4);}
+.toggle input:checked+.toggle-slider::before{background:var(--green);transform:translateX(20px);}
+
+/* SAVE / ACTION BUTTONS */
+.actions-bar{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap;}
+.save-btn{padding:12px 32px;background:var(--gold);color:var(--black);font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px;display:flex;align-items:center;gap:8px;}
+.save-btn:hover{background:var(--gold-light);box-shadow:0 0 20px rgba(212,160,23,0.3);}
+.reset-btn{padding:12px 24px;background:transparent;border:1px solid rgba(255,255,255,0.12);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:0.9rem;border-radius:8px;cursor:pointer;transition:all 0.2s;}
+.reset-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* CREDITS */
+.credits-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.credit-card{background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;text-align:center;}
+.credit-label{font-size:0.65rem;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+.credit-val{font-family:'Teko',sans-serif;font-size:1.5rem;line-height:1;}
+.credit-val.green{color:var(--green);}
+.credit-val.yellow{color:var(--gold);}
+.credit-val.red{color:var(--red);}
+
+/* LOG */
+.log-wrap{background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:14px;max-height:180px;overflow-y:auto;font-family:monospace;font-size:0.78rem;line-height:1.7;}
+.log-wrap::-webkit-scrollbar{width:3px;}
+.log-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.log-entry{display:flex;gap:10px;margin-bottom:2px;}
+.log-time{color:var(--muted);flex-shrink:0;}
+.log-msg.ok{color:#86efac;}
+.log-msg.err{color:#fca5a5;}
+.log-msg.info{color:#93c5fd;}
+.log-msg.warn{color:#fcd34d;}
+
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--card);border:1px solid var(--border);color:var(--white);padding:12px 24px;border-radius:10px;font-size:0.88rem;z-index:999;transition:transform 0.3s cubic-bezier(.16,1,.3,1);box-shadow:0 12px 40px rgba(0,0,0,0.5);display:flex;align-items:center;gap:8px;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.success::before{content:'✅';}
+.toast.error::before{content:'⚠️';}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,0.2);border-top-color:#111;border-radius:50%;animation:spin .6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+<div class="bg-grid"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+<div class="topbar-logo">BET<span>X</span></div>
+<div class="topbar-badge">Admin Panel</div>
+<div class="topbar-sep"></div>
+<div class="topbar-page">Admin <span>/ API Settings</span></div>
+<div class="topbar-right">
+    <button class="back-btn" onclick="goBack()">← Back to Admin</button>
+</div>
+</div>
+
+<!-- ACCESS GATE -->
+<div id="accessGate">
+<div class="gate-box">
+    <div class="gate-icon">🔐</div>
+    <div class="gate-title">Admin Access Required</div>
+    <div class="gate-sub">This page is restricted to administrators only. Please login from the admin panel to continue.</div>
+    <button class="gate-btn" onclick="window.location.href='admin.html'">Go to Admin Login →</button>
+</div>
+</div>
+
+<!-- MAIN PAGE -->
+<div id="mainPage">
+
+<!-- HEADER -->
+<div class="page-header">
+    <div class="page-title">⚙️ API Settings</div>
+    <div class="page-sub">Manage live score APIs, odds APIs, refresh intervals and connection settings.</div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+    <div class="status-card" id="cricStatusCard">
+    <div class="s-dot red" id="cricDot"></div>
+    <div class="s-info">
+        <div class="s-label">CricAPI Status</div>
+        <div class="s-val" id="cricStatusText">Not Connected</div>
+    </div>
+    </div>
+    <div class="status-card" id="oddsStatusCard">
+    <div class="s-dot red" id="oddsDot"></div>
+    <div class="s-info">
+        <div class="s-label">Odds API Status</div>
+        <div class="s-val" id="oddsStatusText">Not Connected</div>
+    </div>
+    </div>
+    <div class="status-card warning">
+    <div class="s-dot yellow"></div>
+    <div class="s-info">
+        <div class="s-label">Auto Refresh</div>
+        <div class="s-val" id="refreshStatusText">Every 30s</div>
+    </div>
+    </div>
+</div>
+
+<!-- ─── CRICAPI ─── -->
+<div class="section">
+    <div class="section-head">
+    <div class="section-name">
+        <div class="section-icon blue">🏏</div>
+        <div>
+        <div class="section-title2">CricAPI — Live Scores</div>
+        <div class="section-desc">Provides live IPL/ODI scores, match list, ball-by-ball data</div>
+        </div>
+    </div>
+    <span class="section-badge badge-inactive" id="cricBadge">INACTIVE</span>
+    </div>
+
+    <div class="credits-grid" id="cricCredits" style="display:none">
+    <div class="credit-card"><div class="credit-label">Credits Left</div><div class="credit-val yellow" id="credLeft">—</div></div>
+    <div class="credit-card"><div class="credit-label">Credits Used</div><div class="credit-val" id="credUsed">—</div></div>
+    <div class="credit-card"><div class="credit-label">Plan</div><div class="credit-val green" id="credPlan">Free</div></div>
+    </div>
+
+    <div class="field">
+    <div class="field-label">
+        <span class="label-text">API Key</span>
+        <span class="label-hint">Get free key at <a href="https://cricapi.com" target="_blank">cricapi.com</a></span>
+    </div>
+    <div class="input-wrap">
+        <input class="api-input" type="password" id="cricApiKey" placeholder="Paste your CricAPI key here...">
+        <button class="eye-btn" onclick="toggleVis('cricApiKey',this)">👁</button>
+        <button class="copy-btn" onclick="copyVal('cricApiKey')" title="Copy">📋</button>
+        <button class="test-btn" onclick="testCricApi()">
+        <span id="cricTestIcon">⚡</span> Test Connection
+        </button>
+    </div>
+    <div class="test-result" id="cricTestResult"></div>
+    </div>
+
+    <div class="field-row">
+    <div class="field">
+        <div class="field-label"><span class="label-text">Endpoint</span></div>
+        <select class="select-input" id="cricEndpoint">
+        <option value="currentMatches">currentMatches — All live matches</option>
+        <option value="cricScore">cricScore — Fastest live score</option>
+        <option value="matches">matches — All matches (scheduled too)</option>
+        </select>
+    </div>
+    <div class="field">
+        <div class="field-label"><span class="label-text">Match Filter</span></div>
+        <select class="select-input" id="cricFilter">
+        <option value="all">All Cricket Matches</option>
+        <option value="ipl">IPL Only (T20)</option>
+        <option value="odi">ODI Only</option>
+        <option value="t20i">T20 International</option>
+        </select>
+    </div>
+    </div>
+
+    <div class="toggle-row">
+    <div class="toggle-info">
+        <div class="toggle-name">Enable CricAPI</div>
+        <div class="toggle-desc">Show live scores from CricAPI on dashboard</div>
+    </div>
+    <label class="toggle"><input type="checkbox" id="cricEnabled" checked><span class="toggle-slider"></span></label>
+    </div>
+    <div class="toggle-row">
+    <div class="toggle-info">
+        <div class="toggle-name">Ball-by-ball Commentary</div>
+        <div class="toggle-desc">Fetch detailed ball-by-ball data (uses more API credits)</div>
+    </div>
+    <label class="toggle"><input type="checkbox" id="cricBall"><span class="toggle-slider"></span></label>
+    </div>
+</div>
+
+<!-- ─── ODDS API ─── -->
+<div class="section">
+    <div class="section-head">
+    <div class="section-name">
+        <div class="section-icon gold">💰</div>
+        <div>
+        <div class="section-title2">The Odds API — Live Betting Odds</div>
+        <div class="section-desc">Real-time odds from 40+ bookmakers (Betfair, 1xBet, etc.)</div>
+        </div>
+    </div>
+    <span class="section-badge badge-inactive" id="oddsBadge">INACTIVE</span>
+    </div>
+
+    <div class="credits-grid" id="oddsCredits" style="display:none">
+    <div class="credit-card"><div class="credit-label">Requests Left</div><div class="credit-val yellow" id="oddsReqLeft">—</div></div>
+    <div class="credit-card"><div class="credit-label">Requests Used</div><div class="credit-val" id="oddsReqUsed">—</div></div>
+    <div class="credit-card"><div class="credit-label">Plan</div><div class="credit-val green" id="oddsPlan">Free</div></div>
+    </div>
+
+    <div class="field">
+    <div class="field-label">
+        <span class="label-text">API Key</span>
+        <span class="label-hint">Get free key at <a href="https://the-odds-api.com" target="_blank">the-odds-api.com</a></span>
+    </div>
+    <div class="input-wrap">
+        <input class="api-input" type="password" id="oddsApiKey" placeholder="Paste your Odds API key here...">
+        <button class="eye-btn" onclick="toggleVis('oddsApiKey',this)">👁</button>
+        <button class="copy-btn" onclick="copyVal('oddsApiKey')" title="Copy">📋</button>
+        <button class="test-btn" onclick="testOddsApi()">
+        <span id="oddsTestIcon">⚡</span> Test Connection
+        </button>
+    </div>
+    <div class="test-result" id="oddsTestResult"></div>
+    </div>
+
+    <div class="field-row">
+    <div class="field">
+        <div class="field-label"><span class="label-text">Sport / Market</span></div>
+        <select class="select-input" id="oddsSport">
+        <option value="cricket_ipl">Cricket – IPL</option>
+        <option value="cricket_international_t20">Cricket – International T20</option>
+        <option value="cricket_international_oneday">Cricket – ODI</option>
+        </select>
+    </div>
+    <div class="field">
+        <div class="field-label"><span class="label-text">Odds Format</span></div>
+        <select class="select-input" id="oddsFormat">
+        <option value="decimal">Decimal (2.50)</option>
+        <option value="american">American (+150)</option>
+        <option value="fractional">Fractional (3/2)</option>
+        </select>
+    </div>
+    </div>
+
+    <div class="field-row">
+    <div class="field">
+        <div class="field-label"><span class="label-text">Region</span></div>
+        <select class="select-input" id="oddsRegion">
+        <option value="in">India (in)</option>
+        <option value="uk">UK (uk)</option>
+        <option value="eu">Europe (eu)</option>
+        <option value="us">USA (us)</option>
+        </select>
+    </div>
+    <div class="field">
+        <div class="field-label"><span class="label-text">Markets</span></div>
+        <select class="select-input" id="oddsMarket">
+        <option value="h2h">H2H — Win/Lose</option>
+        <option value="totals">Totals — Over/Under</option>
+        <option value="spreads">Spreads</option>
+        </select>
+    </div>
+    </div>
+
+    <div class="toggle-row">
+    <div class="toggle-info">
+        <div class="toggle-name">Enable Odds API</div>
+        <div class="toggle-desc">Show live bookmaker odds on match pages</div>
+    </div>
+    <label class="toggle"><input type="checkbox" id="oddsEnabled" checked><span class="toggle-slider"></span></label>
+    </div>
+    <div class="toggle-row">
+    <div class="toggle-info">
+        <div class="toggle-name">Show Best Odds Only</div>
+        <div class="toggle-desc">Display the single best odds across all bookmakers</div>
+    </div>
+    <label class="toggle"><input type="checkbox" id="oddsBest" checked><span class="toggle-slider"></span></label>
+    </div>
+</div>
+
+<!-- ─── REFRESH SETTINGS ─── -->
+<div class="section">
+    <div class="section-head">
+    <div class="section-name">
+        <div class="section-icon green">⏱️</div>
+        <div>
+        <div class="section-title2">Refresh & Performance</div>
+        <div class="section-desc">Control how often live data updates (affects API credit usage)</div>
+        </div>
+    </div>
+    </div>
+
+    <div class="field-row">
+    <div class="field">
+        <div class="field-label">
+        <span class="label-text">Score Refresh Interval</span>
+        <span class="label-hint" id="scoreRefreshHint">~2,880 calls/day</span>
+        </div>
+        <select class="select-input" id="scoreRefresh" onchange="updateHints()">
+        <option value="10000">Every 10 seconds (heavy)</option>
+        <option value="30000" selected>Every 30 seconds (recommended)</option>
+        <option value="60000">Every 60 seconds (light)</option>
+        <option value="120000">Every 2 minutes (minimal)</option>
+        <option value="0">Manual refresh only</option>
+        </select>
+    </div>
+    <div class="field">
+        <div class="field-label">
+        <span class="label-text">Odds Refresh Interval</span>
+        <span class="label-hint" id="oddsRefreshHint">~2,880 calls/day</span>
+        </div>
+        <select class="select-input" id="oddsRefresh" onchange="updateHints()">
+        <option value="10000">Every 10 seconds (heavy)</option>
+        <option value="30000" selected>Every 30 seconds (recommended)</option>
+        <option value="60000">Every 60 seconds (light)</option>
+        <option value="120000">Every 2 minutes (minimal)</option>
+        <option value="0">Manual refresh only</option>
+        </select>
+    </div>
+    </div>
+
+    <div class="toggle-row">
+    <div class="toggle-info">
+        <div class="toggle-name">Pause Refresh When Tab Hidden</div>
+        <div class="toggle-desc">Stop API calls when user is on another tab (saves credits)</div>
+    </div>
+    <label class="toggle"><input type="checkbox" id="pauseHidden" checked><span class="toggle-slider"></span></label>
+    </div>
+    <div class="toggle-row">
+    <div class="toggle-info">
+        <div class="toggle-name">Show "Last Updated" Timestamp</div>
+        <div class="toggle-desc">Display when data was last refreshed on dashboard</div>
+    </div>
+    <label class="toggle"><input type="checkbox" id="showTimestamp" checked><span class="toggle-slider"></span></label>
+    </div>
+    <div class="toggle-row">
+    <div class="toggle-info">
+        <div class="toggle-name">Flash Odds on Change</div>
+        <div class="toggle-desc">Highlight odds that changed since last refresh</div>
+    </div>
+    <label class="toggle"><input type="checkbox" id="flashOdds" checked><span class="toggle-slider"></span></label>
+    </div>
+</div>
+
+<!-- ─── ACTIVITY LOG ─── -->
+<div class="section">
+    <div class="section-head">
+    <div class="section-name">
+        <div class="section-icon blue">📋</div>
+        <div>
+        <div class="section-title2">Activity Log</div>
+        <div class="section-desc">Recent API calls and connection events</div>
+        </div>
+    </div>
+    <button onclick="clearLog()" style="background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--muted);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:0.78rem;font-family:'DM Sans',sans-serif;transition:all 0.2s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--muted)'">Clear Log</button>
+    </div>
+    <div class="log-wrap" id="activityLog">
+    <div class="log-entry"><span class="log-time">--:--:--</span><span class="log-msg info">Waiting for API settings to be configured...</span></div>
+    </div>
+</div>
+
+<!-- SAVE ACTIONS -->
+<div class="actions-bar">
+    <button class="save-btn" onclick="saveSettings()">
+    <span id="saveBtnIcon">💾</span> Save All Settings
+    </button>
+    <button class="reset-btn" onclick="resetSettings()">Reset to Default</button>
+    <button onclick="testAll()" style="padding:12px 24px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);color:#60a5fa;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;border-radius:8px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.2)'" onmouseout="this.style.background='rgba(59,130,246,0.1)'">⚡ Test All APIs</button>
+</div>
+
+</div><!-- mainPage -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── AUTH GUARD ──
+window.addEventListener('DOMContentLoaded', () => {
+const isAdmin = sessionStorage.getItem('betx_admin') === 'true';
+if (isAdmin) {
+    document.getElementById('accessGate').style.display = 'none';
+    document.getElementById('mainPage').style.display = 'block';
+    loadSettings();
+    updateHints();
+    addLog('info', 'API Settings page loaded');
+}
+});
+
+function goBack() { window.location.href = 'admin.html'; }
+
+// ── SETTINGS KEYS ──
+const STORAGE_KEY = 'betx_api_settings';
+
+const DEFAULTS = {
+cricApiKey: '', cricEndpoint: 'currentMatches', cricFilter: 'all',
+cricEnabled: true, cricBall: false,
+oddsApiKey: '', oddsSport: 'cricket_ipl', oddsFormat: 'decimal',
+oddsRegion: 'in', oddsMarket: 'h2h',
+oddsEnabled: true, oddsBest: true,
+scoreRefresh: '30000', oddsRefresh: '30000',
+pauseHidden: true, showTimestamp: true, flashOdds: true,
+};
+
+function loadSettings() {
+const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+const cfg = { ...DEFAULTS, ...saved };
+
+document.getElementById('cricApiKey').value = cfg.cricApiKey;
+document.getElementById('cricEndpoint').value = cfg.cricEndpoint;
+document.getElementById('cricFilter').value = cfg.cricFilter;
+document.getElementById('cricEnabled').checked = cfg.cricEnabled;
+document.getElementById('cricBall').checked = cfg.cricBall;
+
+document.getElementById('oddsApiKey').value = cfg.oddsApiKey;
+document.getElementById('oddsSport').value = cfg.oddsSport;
+document.getElementById('oddsFormat').value = cfg.oddsFormat;
+document.getElementById('oddsRegion').value = cfg.oddsRegion;
+document.getElementById('oddsMarket').value = cfg.oddsMarket;
+document.getElementById('oddsEnabled').checked = cfg.oddsEnabled;
+document.getElementById('oddsBest').checked = cfg.oddsBest;
+
+document.getElementById('scoreRefresh').value = cfg.scoreRefresh;
+document.getElementById('oddsRefresh').value = cfg.oddsRefresh;
+document.getElementById('pauseHidden').checked = cfg.pauseHidden;
+document.getElementById('showTimestamp').checked = cfg.showTimestamp;
+document.getElementById('flashOdds').checked = cfg.flashOdds;
+
+updateStatus(cfg);
+if (cfg.cricApiKey) addLog('info', 'Loaded saved CricAPI key');
+if (cfg.oddsApiKey) addLog('info', 'Loaded saved Odds API key');
+}
+
+function getSettings() {
+return {
+    cricApiKey:     document.getElementById('cricApiKey').value.trim(),
+    cricEndpoint:   document.getElementById('cricEndpoint').value,
+    cricFilter:     document.getElementById('cricFilter').value,
+    cricEnabled:    document.getElementById('cricEnabled').checked,
+    cricBall:       document.getElementById('cricBall').checked,
+    oddsApiKey:     document.getElementById('oddsApiKey').value.trim(),
+    oddsSport:      document.getElementById('oddsSport').value,
+    oddsFormat:     document.getElementById('oddsFormat').value,
+    oddsRegion:     document.getElementById('oddsRegion').value,
+    oddsMarket:     document.getElementById('oddsMarket').value,
+    oddsEnabled:    document.getElementById('oddsEnabled').checked,
+    oddsBest:       document.getElementById('oddsBest').checked,
+    scoreRefresh:   document.getElementById('scoreRefresh').value,
+    oddsRefresh:    document.getElementById('oddsRefresh').value,
+    pauseHidden:    document.getElementById('pauseHidden').checked,
+    showTimestamp:  document.getElementById('showTimestamp').checked,
+    flashOdds:      document.getElementById('flashOdds').checked,
+};
+}
+
+function saveSettings() {
+const cfg = getSettings();
+localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+updateStatus(cfg);
+addLog('ok', 'Settings saved successfully');
+const btn = document.getElementById('saveBtnIcon');
+btn.textContent = '✅'; setTimeout(() => btn.textContent = '💾', 2000);
+showToast('Settings saved!', 'success');
+}
+
+function resetSettings() {
+if (!confirm('Reset all API settings to defaults?')) return;
+localStorage.removeItem(STORAGE_KEY);
+loadSettings();
+addLog('warn', 'Settings reset to defaults');
+showToast('Reset to defaults', 'success');
+}
+
+function updateStatus(cfg) {
+const hasCric = !!cfg.cricApiKey;
+const hasOdds = !!cfg.oddsApiKey;
+
+document.getElementById('cricDot').className = 's-dot ' + (hasCric ? 'yellow' : 'red');
+document.getElementById('cricStatusText').textContent = hasCric ? 'Key Saved' : 'Not Connected';
+document.getElementById('cricStatusCard').className = 'status-card ' + (hasCric ? 'warning' : 'disconnected');
+document.getElementById('cricBadge').className = 'section-badge ' + (hasCric ? 'badge-live' : 'badge-inactive');
+document.getElementById('cricBadge').textContent = hasCric ? 'KEY SAVED' : 'INACTIVE';
+
+document.getElementById('oddsDot').className = 's-dot ' + (hasOdds ? 'yellow' : 'red');
+document.getElementById('oddsStatusText').textContent = hasOdds ? 'Key Saved' : 'Not Connected';
+document.getElementById('oddsStatusCard').className = 'status-card ' + (hasOdds ? 'warning' : 'disconnected');
+document.getElementById('oddsBadge').className = 'section-badge ' + (hasOdds ? 'badge-live' : 'badge-inactive');
+document.getElementById('oddsBadge').textContent = hasOdds ? 'KEY SAVED' : 'INACTIVE';
+
+const ms = parseInt(cfg.scoreRefresh);
+const label = ms === 0 ? 'Manual' : ms < 60000 ? `Every ${ms/1000}s` : `Every ${ms/60000}m`;
+document.getElementById('refreshStatusText').textContent = label;
+}
+
+// ── TEST CRICAPI ──
+async function testCricApi() {
+const key = document.getElementById('cricApiKey').value.trim();
+const res = document.getElementById('cricTestResult');
+const icon = document.getElementById('cricTestIcon');
+if (!key) { showToast('Enter a CricAPI key first', 'error'); return; }
+
+icon.innerHTML = '<span class="spinner"></span>';
+res.style.display = 'none';
+addLog('info', 'Testing CricAPI connection...');
+
+try {
+    const resp = await fetch(`https://api.cricapi.com/v1/currentMatches?apikey=${key}&offset=0`);
+    const data = await resp.json();
+
+    if (data.status === 'success') {
+    const count = data.data?.length || 0;
+    res.className = 'test-result success';
+    res.style.display = 'block';
+    res.textContent = `✅ Connected! Found ${count} live matches. Credits remaining: ${data.info?.credits || '?'}`;
+
+    document.getElementById('cricDot').className = 's-dot green';
+    document.getElementById('cricStatusText').textContent = 'Connected ✓';
+    document.getElementById('cricStatusCard').className = 'status-card connected';
+    document.getElementById('cricBadge').className = 'section-badge badge-active';
+    document.getElementById('cricBadge').textContent = 'ACTIVE';
+
+    if (data.info) {
+        document.getElementById('cricCredits').style.display = 'grid';
+        document.getElementById('credLeft').textContent = data.info.credits || '—';
+        document.getElementById('credUsed').textContent = (data.info.totalCredits - data.info.credits) || '—';
+    }
+    addLog('ok', `CricAPI OK — ${count} matches found`);
+    document.getElementById('cricApiKey').className = 'api-input valid';
+    } else {
+    throw new Error(data.reason || 'Invalid response');
+    }
+} catch (err) {
+    res.className = 'test-result error';
+    res.style.display = 'block';
+    res.textContent = `❌ Failed: ${err.message}. Check your API key.`;
+    document.getElementById('cricApiKey').className = 'api-input invalid';
+    addLog('err', `CricAPI failed: ${err.message}`);
+}
+icon.textContent = '⚡';
+}
+
+// ── TEST ODDS API (FIXED WITH DEBUG) ──
+async function testOddsApi() {
+const key = document.getElementById('oddsApiKey').value.trim();
+const res = document.getElementById('oddsTestResult');
+const icon = document.getElementById('oddsTestIcon');
+
+// Show debug info in result box immediately
+res.style.display = 'block';
+res.className = 'test-result error';
+
+if (!key) {
+    res.textContent = '❌ No key found in field. Please paste your key and try again.';
+    showToast('Enter an Odds API key first', 'error');
+    return;
+}
+
+// Show what key is being used (first 6 chars only for security)
+res.textContent = `⏳ Testing with key: ${key.substring(0,6)}... (length: ${key.length} chars)`;
+addLog('info', `Testing Odds API — key starts with: ${key.substring(0,6)}, length: ${key.length}`);
+
+icon.innerHTML = '<span class="spinner"></span>';
+
+try {
+    const url = `https://api.the-odds-api.com/v4/sports?apikey=${key}`;
+    addLog('info', `Calling: ${url.substring(0,60)}...`);
+
+    const resp = await fetch(url);
+    const remaining = resp.headers.get('x-requests-remaining') || '?';
+    const used = resp.headers.get('x-requests-used') || '?';
+    const bodyText = await resp.text();
+
+    addLog('info', `Response status: ${resp.status}`);
+    addLog('info', `Response body: ${bodyText.substring(0,100)}`);
+
+    if (!resp.ok) {
+    let errMsg = `HTTP ${resp.status}`;
+    try { errMsg = JSON.parse(bodyText).message || errMsg; } catch(e) {}
+    throw new Error(`${errMsg} — Raw: ${bodyText.substring(0,80)}`);
+    }
+
+    const data = JSON.parse(bodyText);
+    const count = Array.isArray(data) ? data.length : 0;
+    const cricketSports = Array.isArray(data)
+    ? data.filter(s => s.group?.toLowerCase().includes('cricket')).map(s => s.title)
+    : [];
+
+    res.className = 'test-result success';
+    res.textContent = `✅ Connected! ${count} sports available. Cricket: ${cricketSports.length > 0 ? cricketSports.join(', ') : 'None active right now'}. Requests remaining: ${remaining}`;
+
+    document.getElementById('oddsDot').className = 's-dot green';
+    document.getElementById('oddsStatusText').textContent = 'Connected ✓';
+    document.getElementById('oddsStatusCard').className = 'status-card connected';
+    document.getElementById('oddsBadge').className = 'section-badge badge-active';
+    document.getElementById('oddsBadge').textContent = 'ACTIVE';
+
+    document.getElementById('oddsCredits').style.display = 'grid';
+    document.getElementById('oddsReqLeft').textContent = remaining;
+    document.getElementById('oddsReqUsed').textContent = used;
+
+    document.getElementById('oddsApiKey').className = 'api-input valid';
+    addLog('ok', `Odds API OK — ${count} sports, ${remaining} requests left`);
+
+} catch (err) {
+    res.className = 'test-result error';
+    res.textContent = `❌ Failed: ${err.message}`;
+    document.getElementById('oddsApiKey').className = 'api-input invalid';
+    addLog('err', `Odds API failed: ${err.message}`);
+}
+icon.textContent = '⚡';
+}
+
+async function testAll() {
+addLog('info', 'Testing all APIs...');
+await testCricApi();
+await testOddsApi();
+}
+
+// ── HINTS ──
+function updateHints() {
+const scoreMs = parseInt(document.getElementById('scoreRefresh').value);
+const oddsMs  = parseInt(document.getElementById('oddsRefresh').value);
+
+const calcCalls = (ms) => {
+    if (ms === 0) return 'Manual only';
+    const perHour = Math.round(3600000 / ms);
+    return `~${(perHour * 24).toLocaleString()} calls/day`;
+};
+
+document.getElementById('scoreRefreshHint').textContent = calcCalls(scoreMs);
+document.getElementById('oddsRefreshHint').textContent  = calcCalls(oddsMs);
+
+const label = scoreMs === 0 ? 'Manual only' : scoreMs < 60000 ? `Every ${scoreMs/1000}s` : `Every ${scoreMs/60000}m`;
+document.getElementById('refreshStatusText').textContent = label;
+}
+
+// ── LOG ──
+function addLog(type, msg) {
+const log = document.getElementById('activityLog');
+const now = new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+const entry = document.createElement('div');
+entry.className = 'log-entry';
+entry.innerHTML = `<span class="log-time">${now}</span><span class="log-msg ${type}">${msg}</span>`;
+log.insertBefore(entry, log.firstChild);
+if (log.children.length > 50) log.removeChild(log.lastChild);
+}
+
+function clearLog() {
+document.getElementById('activityLog').innerHTML =
+    '<div class="log-entry"><span class="log-time">--:--:--</span><span class="log-msg info">Log cleared.</span></div>';
+}
+
+// ── UI HELPERS ──
+function toggleVis(id, btn) {
+const el = document.getElementById(id);
+if (el.type === 'password') { el.type = 'text'; btn.textContent = '🙈'; }
+else { el.type = 'password'; btn.textContent = '👁'; }
+}
+
+function copyVal(id) {
+const val = document.getElementById(id).value;
+if (!val) { showToast('Nothing to copy', 'error'); return; }
+navigator.clipboard.writeText(val).then(() => showToast('Copied to clipboard!', 'success'));
+}
+
+function showToast(msg, type) {
+const t = document.getElementById('toast');
+t.textContent = msg;
+t.className = 'toast ' + (type || '');
+t.classList.add('show');
+setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>

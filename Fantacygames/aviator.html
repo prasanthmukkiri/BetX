@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AviatorX — Instant Games</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800;900&family=Roboto+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #121212;
+    --bg2: #1a1a1a;
+    --panel: #1e1e1e;
+    --panel2: #252525;
+    --border: #2d2d2d;
+    --border2: #333;
+    --accent: #c8f000;       /* site's yellow-green */
+    --accent2: #a8cc00;
+    --accent-glow: rgba(200,240,0,0.2);
+    --red: #e63946;
+    --green: #22c55e;
+    --gold: #facc15;
+    --orange: #f97316;
+    --text: #f0f0f0;
+    --muted: #666;
+    --muted2: #888;
+    --nav-height: 52px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== TOP NAV ===== */
+  .top-nav {
+    height: var(--nav-height);
+    background: #111;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 0;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+  }
+  .nav-logo {
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 900;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+    color: var(--accent);
+    margin-right: 24px;
+    white-space: nowrap;
+  }
+  .nav-logo span { color: #fff; }
+  .nav-tabs {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--muted2);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+    background: transparent;
+  }
+  .nav-tab:hover { color: var(--text); background: var(--panel); }
+  .nav-tab.active {
+    color: var(--accent);
+    background: rgba(200,240,0,0.08);
+    border-bottom: 2px solid var(--accent);
+    border-radius: 6px 6px 0 0;
+  }
+  .nav-tab .tab-icon { font-size: 1rem; }
+  .nav-tab .badge {
+    background: var(--accent);
+    color: #111;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+  }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
+  .wallet-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--panel2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .wallet-btn:hover { border-color: var(--accent); }
+  .wallet-label { font-size: 0.75rem; color: var(--muted2); }
+  .wallet-val {
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--accent);
+  }
+  .deposit-btn {
+    background: var(--accent);
+    color: #111;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 800;
+    font-size: 0.82rem;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .deposit-btn:hover { background: #d4f500; transform: translateY(-1px); }
+
+  /* ===== BREADCRUMB ===== */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    font-size: 0.78rem;
+    color: var(--muted2);
+    background: #111;
+    border-bottom: 1px solid var(--border);
+  }
+  .breadcrumb a { color: var(--muted2); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--accent); }
+  .breadcrumb .sep { color: var(--muted); }
+  .breadcrumb .current { color: var(--text); font-weight: 600; }
+
+  /* ===== MAIN LAYOUT ===== */
+  .main-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    min-height: calc(100vh - var(--nav-height) - 33px);
+  }
+
+  /* ===== GAME AREA ===== */
+  .game-area {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: var(--bg);
+  }
+
+  /* Game header */
+  .game-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .game-title-block {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .game-badge {
+    background: var(--accent);
+    color: #111;
+    font-weight: 800;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .game-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: 1px;
+  }
+  .game-info-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--muted2);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    background: var(--red);
+    border-radius: 50%;
+    animation: pulse-red 1.5s ease infinite;
+  }
+
+  /* History bar */
+  .history-bar {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+  .history-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-right: 4px;
+  }
+  .hist-chip {
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 700;
+    animation: popIn 0.3s ease;
+  }
+  .hist-chip.low { background: rgba(230,57,70,0.12); color: var(--red); border: 1px solid rgba(230,57,70,0.25); }
+  .hist-chip.mid { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+  .hist-chip.high { background: rgba(200,240,0,0.1); color: var(--accent); border: 1px solid rgba(200,240,0,0.25); }
+
+  /* Canvas area */
+  .canvas-wrap {
+    position: relative;
+    background: linear-gradient(180deg, #0c0c0c 0%, #141414 100%);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    flex: 1;
+    min-height: 320px;
+  }
+  canvas { display: block; width: 100%; height: 100%; }
+
+  /* Multiplier display */
+  .multiplier-display {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+  }
+  .mult-value {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 4rem;
+    font-weight: 700;
+    line-height: 1;
+    text-shadow: 0 0 30px currentColor;
+    transition: color 0.3s;
+  }
+  .mult-label {
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 6px;
+    font-weight: 700;
+  }
+
+  /* Crash overlay */
+  .crash-overlay {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(6px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s;
+    border-radius: 10px;
+  }
+  .crash-overlay.show { opacity: 1; }
+  .crash-title {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--red);
+    text-shadow: 0 0 40px var(--red);
+    animation: shake 0.5s ease;
+    letter-spacing: 2px;
+  }
+  .crash-mult {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.4rem;
+    color: var(--text);
+    margin-top: 6px;
+    font-weight: 600;
+  }
+  .next-round-bar {
+    margin-top: 16px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 0.85rem; color: var(--muted2);
+  }
+  .countdown-ring {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 3px solid var(--border2);
+    border-top-color: var(--accent);
+    animation: spin 1s linear infinite;
+  }
+
+  /* Live bets */
+  .live-bets-wrap {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .lb-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel2);
+  }
+  .lb-header-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--muted2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .lb-count {
+    background: var(--border2);
+    color: var(--text);
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+  }
+  .lb-cols {
+    display: grid;
+    grid-template-columns: 1fr 80px 100px;
+    padding: 5px 12px;
+    font-size: 0.68rem;
+    color: var(--muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  .lb-body { max-height: 100px; overflow: hidden; }
+  .lb-row {
+    display: grid;
+    grid-template-columns: 1fr 80px 100px;
+    padding: 5px 12px;
+    font-size: 0.82rem;
+    align-items: center;
+    animation: slideIn 0.3s ease;
+    border-bottom: 1px solid rgba(45,45,45,0.5);
+  }
+  .lb-name { color: var(--muted2); font-weight: 600; }
+  .lb-bet { color: var(--text); font-weight: 700; font-family: 'Roboto Mono', monospace; font-size: 0.78rem; }
+  .lb-mult { font-family: 'Roboto Mono', monospace; font-size: 0.75rem; font-weight: 700; }
+  .lb-mult.win { color: var(--green); }
+  .lb-mult.playing { color: var(--accent); }
+  .lb-mult.lost { color: var(--red); }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    border-left: 1px solid var(--border);
+    background: var(--bg2);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* Promo banner */
+  .promo-banner {
+    background: linear-gradient(135deg, #1a2500, #111);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .promo-badge {
+    background: var(--accent);
+    color: #111;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .promo-text { font-size: 0.8rem; color: var(--muted2); }
+  .promo-text strong { color: var(--accent); }
+
+  /* Sidebar inner */
+  .sidebar-inner {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+  }
+
+  /* Bet mode tabs */
+  .bet-tabs {
+    display: flex;
+    gap: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 3px;
+  }
+  .bet-tab {
+    flex: 1; padding: 8px;
+    border: none; border-radius: 5px;
+    background: transparent; color: var(--muted2);
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 700; font-size: 0.82rem;
+    cursor: pointer; transition: all 0.2s;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .bet-tab.active {
+    background: var(--panel2);
+    color: var(--text);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+
+  /* Section label */
+  .section-label {
+    font-size: 0.68rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 7px;
+    font-weight: 700;
+  }
+
+  /* Amount control */
+  .amount-control {
+    display: flex;
+    align-items: center;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 7px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .amount-control:focus-within { border-color: var(--accent); }
+  .amount-btn {
+    width: 42px; height: 42px;
+    border: none; background: transparent;
+    color: var(--muted2); font-size: 1.2rem;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .amount-btn:hover { background: var(--border); color: var(--text); }
+  .amount-input {
+    flex: 1; border: none; background: transparent;
+    color: var(--text);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1rem; font-weight: 700;
+    text-align: center; outline: none;
+  }
+
+  /* Quick amounts */
+  .quick-amounts { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 7px; }
+  .qa-btn {
+    flex: 1; min-width: calc(25% - 4px);
+    padding: 6px 3px;
+    border: 1px solid var(--border2);
+    background: var(--bg);
+    border-radius: 5px;
+    color: var(--muted2);
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 700; font-size: 0.8rem;
+    cursor: pointer; transition: all 0.2s;
+    text-align: center;
+  }
+  .qa-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(200,240,0,0.05); }
+
+  /* Auto cashout */
+  .auto-cashout-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .toggle-switch {
+    position: relative; width: 44px; height: 24px;
+  }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0;
+    background: var(--border2);
+    border-radius: 24px; cursor: pointer; transition: 0.3s;
+  }
+  .toggle-slider:before {
+    content: ''; position: absolute;
+    width: 18px; height: 18px; left: 3px; bottom: 3px;
+    background: var(--muted); border-radius: 50%; transition: 0.3s;
+  }
+  input:checked + .toggle-slider { background: var(--accent); }
+  input:checked + .toggle-slider:before { transform: translateX(20px); background: #111; }
+
+  .cashout-at-control {
+    display: flex; align-items: center;
+    background: var(--bg); border: 1px solid var(--border2);
+    border-radius: 7px; overflow: hidden; margin-top: 7px;
+    transition: opacity 0.3s;
+  }
+  .cashout-at-control.disabled { opacity: 0.35; pointer-events: none; }
+  .cashout-prefix {
+    padding: 0 10px; color: var(--muted);
+    font-size: 0.8rem; border-right: 1px solid var(--border2);
+    height: 40px; display: flex; align-items: center; white-space: nowrap;
+  }
+  .cashout-input {
+    flex: 1; border: none; background: transparent;
+    color: var(--accent);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.95rem; font-weight: 700;
+    text-align: center; outline: none; padding: 8px;
+  }
+  .cashout-x { padding: 0 10px; color: var(--muted); font-family: 'Roboto Mono', monospace; font-size: 0.85rem; }
+
+  /* Divider */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+  /* Stats */
+  .stats-row { display: flex; gap: 6px; }
+  .stat-card {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 9px 10px;
+    text-align: center;
+  }
+  .stat-val {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.95rem; font-weight: 700;
+  }
+  .stat-val.green { color: var(--green); }
+  .stat-val.red { color: var(--red); }
+  .stat-val.gold { color: var(--accent); }
+  .stat-lbl { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
+
+  /* BET BUTTON */
+  .bet-btn {
+    width: 100%; padding: 15px;
+    border: none; border-radius: 8px;
+    font-family: 'Exo 2', sans-serif; font-weight: 800;
+    font-size: 1rem; letter-spacing: 1.5px;
+    cursor: pointer; transition: all 0.2s;
+    text-transform: uppercase;
+    position: relative;
+  }
+  .bet-btn.place {
+    background: var(--accent);
+    color: #111;
+    box-shadow: 0 4px 16px rgba(200,240,0,0.25);
+  }
+  .bet-btn.place:hover {
+    background: #d4f500;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(200,240,0,0.4);
+  }
+  .bet-btn.cashout {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(34,197,94,0.35);
+    animation: pulseGreen 1s ease infinite;
+  }
+  .bet-btn.waiting {
+    background: var(--border2);
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+  .bet-btn.cancel {
+    background: rgba(230,57,70,0.1);
+    color: var(--red);
+    border: 1px solid rgba(230,57,70,0.3);
+  }
+  .btn-sub {
+    font-size: 0.72rem;
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 400;
+    opacity: 0.75;
+    display: block;
+    margin-top: 3px;
+    letter-spacing: 0;
+  }
+
+  /* Auto bet panel */
+  #autoBetPanel { display: none; }
+  .auto-note {
+    font-size: 0.75rem;
+    color: var(--muted2);
+    margin-top: 7px;
+    line-height: 1.4;
+  }
+
+  /* Bottom nav hint */
+  .more-games {
+    border-top: 1px solid var(--border);
+    padding: 10px 14px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .more-games::-webkit-scrollbar { display: none; }
+  .game-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    min-width: 60px;
+  }
+  .game-chip:hover { border-color: var(--accent); }
+  .game-chip .gc-icon { font-size: 1.2rem; }
+  .game-chip .gc-name { font-size: 0.65rem; color: var(--muted2); font-weight: 700; text-transform: uppercase; }
+  .game-chip.active-game { border-color: var(--accent); background: rgba(200,240,0,0.05); }
+  .game-chip.active-game .gc-name { color: var(--accent); }
+
+  /* Animations */
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @keyframes slideIn { from{transform:translateX(-8px);opacity:0} to{transform:translateX(0);opacity:1} }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)}
+    40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)}
+  }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  @keyframes pulseGreen {
+    0%,100%{box-shadow:0 4px 20px rgba(34,197,94,0.3)}
+    50%{box-shadow:0 4px 36px rgba(34,197,94,0.6)}
+  }
+  @keyframes pulse-red {
+    0%,100%{opacity:1} 50%{opacity:0.3}
+  }
+
+  /* Responsive */
+  @media(max-width:768px) {
+    .main-layout { grid-template-columns: 1fr; }
+    .sidebar { border-left: none; border-top: 1px solid var(--border); }
+    .mult-value { font-size: 2.8rem; }
+    .nav-tab span:not(.tab-icon):not(.badge) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<header class="top-nav">
+  <div class="nav-logo">FX<span>BET</span></div>
+  <nav class="nav-tabs">
+    <button class="nav-tab"><span class="tab-icon">⚡</span> <span>Live Events</span> <span class="badge">23</span></button>
+    <button class="nav-tab"><span class="tab-icon">📅</span> <span>Upcoming</span></button>
+    <button class="nav-tab"><span class="tab-icon">🎁</span> <span>Promotions</span></button>
+    <button class="nav-tab"><span class="tab-icon">🎰</span> <span>Live Casino</span></button>
+    <button class="nav-tab active"><span class="tab-icon">⚡</span> <span>Instant Games</span></button>
+    <button class="nav-tab"><span class="tab-icon">🎮</span> <span>Slots</span></button>
+  </nav>
+  <div class="nav-right">
+    <div class="wallet-btn">
+      <span class="wallet-label">Wallet</span>
+      <span class="wallet-val" id="balanceDisplay">₹1,000.00</span>
+    </div>
+    <button class="deposit-btn">+ Deposit</button>
+  </div>
+</header>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb">
+  <a href="#">Home</a>
+  <span class="sep">›</span>
+  <a href="#">Instant Games</a>
+  <span class="sep">›</span>
+  <span class="current">AviatorX</span>
+</div>
+
+<!-- MAIN -->
+<div class="main-layout">
+
+  <!-- GAME AREA -->
+  <div class="game-area">
+
+    <!-- Header -->
+    <div class="game-header">
+      <div class="game-title-block">
+        <span class="game-badge">✈ Aviator</span>
+        <span class="game-title">AviatorX</span>
+      </div>
+      <div class="game-info-badge">
+        <div class="live-dot"></div>
+        <span>LIVE · <span id="playerCount">847</span> playing</span>
+      </div>
+    </div>
+
+    <!-- History bar -->
+    <div class="history-bar">
+      <span class="history-label">Last</span>
+      <div id="historyChips"></div>
+    </div>
+
+    <!-- Canvas -->
+    <div class="canvas-wrap" style="flex:1; min-height:310px;">
+      <canvas id="gameCanvas"></canvas>
+      <div class="multiplier-display" id="multDisplay">
+        <div class="mult-value" id="multValue" style="color:var(--accent)">1.00x</div>
+        <div class="mult-label" id="multLabel">WAITING FOR BETS</div>
+      </div>
+      <div class="crash-overlay" id="crashOverlay">
+        <div class="crash-title">✈ FLEW AWAY!</div>
+        <div class="crash-mult" id="crashMultText">at 1.00x</div>
+        <div class="next-round-bar">
+          <div class="countdown-ring"></div>
+          <span id="nextRoundText">Next round in 5s...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live bets -->
+    <div class="live-bets-wrap">
+      <div class="lb-header">
+        <div class="lb-header-left">
+          <div class="live-dot"></div>
+          Live Bets
+          <span class="lb-count" id="liveBetCount">0</span>
+        </div>
+        <span style="font-size:0.7rem;color:var(--muted)">Real-time</span>
+      </div>
+      <div class="lb-cols">
+        <span>Player</span>
+        <span>Bet</span>
+        <span>Status</span>
+      </div>
+      <div class="lb-body" id="liveBets"></div>
+    </div>
+
+  </div><!-- /game-area -->
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- Promo banner -->
+    <div class="promo-banner">
+      <span class="promo-badge">⚡ Offer</span>
+      <span class="promo-text">First bet bonus: <strong>100% up to ₹30,000</strong></span>
+    </div>
+
+    <div class="sidebar-inner">
+
+      <!-- Tabs -->
+      <div class="bet-tabs">
+        <button class="bet-tab active" id="tabManual" onclick="switchTab('manual')">Manual</button>
+        <button class="bet-tab" id="tabAuto" onclick="switchTab('auto')">Auto Bet</button>
+      </div>
+
+      <!-- Bet Amount -->
+      <div>
+        <div class="section-label">Bet Amount (₹)</div>
+        <div class="amount-control">
+          <button class="amount-btn" onclick="adjustBet(-10)">−</button>
+          <input class="amount-input" id="betInput" type="number" value="50" min="10" max="10000" />
+          <button class="amount-btn" onclick="adjustBet(10)">+</button>
+        </div>
+        <div class="quick-amounts">
+          <button class="qa-btn" onclick="setBet(10)">₹10</button>
+          <button class="qa-btn" onclick="setBet(50)">₹50</button>
+          <button class="qa-btn" onclick="setBet(100)">₹100</button>
+          <button class="qa-btn" onclick="setBet(500)">₹500</button>
+        </div>
+      </div>
+
+      <!-- Auto Cashout -->
+      <div>
+        <div class="auto-cashout-toggle">
+          <div>
+            <div class="section-label" style="margin-bottom:0">Auto Cashout</div>
+            <div style="font-size:0.75rem;color:var(--muted2);margin-top:2px;">Auto collect winnings</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="autoCashoutToggle" onchange="toggleAutoCashout()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="cashout-at-control disabled" id="cashoutAtControl">
+          <span class="cashout-prefix">Cash out at</span>
+          <input class="cashout-input" id="autoCashoutVal" type="number" value="2.00" min="1.01" max="100" step="0.1" />
+          <span class="cashout-x">×</span>
+        </div>
+      </div>
+
+      <!-- Auto Bet Panel -->
+      <div id="autoBetPanel">
+        <div class="section-label">Number of Rounds</div>
+        <div class="amount-control">
+          <button class="amount-btn" onclick="adjustAutoRounds(-1)">−</button>
+          <input class="amount-input" id="autoRoundsInput" type="number" value="5" min="1" max="50" />
+          <button class="amount-btn" onclick="adjustAutoRounds(1)">+</button>
+        </div>
+        <p class="auto-note">Auto bet will place bets automatically for the selected number of rounds.</p>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-val green" id="statWins">0</div>
+          <div class="stat-lbl">Wins</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val red" id="statLosses">0</div>
+          <div class="stat-lbl">Losses</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val gold" id="statProfit">₹0</div>
+          <div class="stat-lbl">Net P/L</div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Bet Button -->
+      <button class="bet-btn place" id="betBtn" onclick="handleBetBtn()">
+        Place Bet
+        <span class="btn-sub" id="btnSub">Click to join next round</span>
+      </button>
+
+    </div>
+
+    <!-- More instant games -->
+    <div class="more-games">
+      <div class="game-chip active-game">
+        <span class="gc-icon">✈️</span>
+        <span class="gc-name">Aviator</span>
+      </div>
+      <a href="../Fantacygames/mines.html"><div class="game-chip">
+        <span class="gc-icon">💣</span>
+        <span class="gc-name">Mines</span>
+      </div></a>
+      <div class="game-chip">
+        <span class="gc-icon">🎲</span>
+        <span class="gc-name">Dice</span>
+      </div>
+      <div class="game-chip">
+        <span class="gc-icon">🚀</span>
+        <span class="gc-name">Rocket</span>
+      </div>
+      <div class="game-chip">
+        <span class="gc-icon">🃏</span>
+        <span class="gc-name">Hilo</span>
+      </div>
+    </div>
+
+  </div><!-- /sidebar -->
+
+</div><!-- /main-layout -->
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let balance = 1000;
+let currentMult = 1.0;
+let crashPoint = 1.0;
+let gamePhase = 'waiting';
+let betPlaced = false;
+let betAmount = 50;
+let cashedOut = false;
+let cashedOutAt = 0;
+let countdownTimer = null;
+let autoCashoutEnabled = false;
+let autoCashoutAt = 2.0;
+let autoTabActive = false;
+let autoRoundsLeft = 0;
+let stats = { wins:0, losses:0, profit:0 };
+let history = [];
+
+function generateCrashPoint(){
+  const r = Math.random();
+  if(r < 0.04) return 1.00;
+  return Math.max(1.00, parseFloat((0.99/(1-r)).toFixed(2)));
+}
+
+const fakeNames = ['Raj***','Priya***','Amit***','Neha***','Vikram***','Sunita***','Kiran***','Ankit***','Pooja***','Ravi***','Suresh***','Meera***'];
+let fakeBets = [];
+
+// ============================================================
+// CANVAS
+// ============================================================
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let points = [];
+let animFrame;
+let planeX=0, planeY=0;
+let startTime=0;
+
+function resizeCanvas(){
+  const wrap = canvas.parentElement;
+  canvas.width = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+}
+
+function drawGame(){
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  drawGrid(W,H);
+  if(gamePhase!=='waiting') drawCurve(W,H);
+  if(gamePhase==='waiting') drawIdlePlane(W,H);
+  else if(gamePhase==='flying') drawPlane(planeX,planeY);
+}
+
+function drawGrid(W,H){
+  ctx.strokeStyle='rgba(45,45,45,0.6)';
+  ctx.lineWidth=1;
+  for(let x=0;x<W;x+=60){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for(let y=0;y<H;y+=50){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+  ctx.strokeStyle='rgba(60,60,60,0.9)';
+  ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(40,H-40); ctx.lineTo(W,H-40); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(40,0); ctx.lineTo(40,H-40); ctx.stroke();
+  // axis labels
+  ctx.fillStyle='rgba(102,102,102,0.6)';
+  ctx.font='11px Roboto Mono';
+  ctx.fillText('1.00x', 44, H-44);
+}
+
+function drawIdlePlane(W,H){
+  drawPlane(80, H-80);
+}
+
+function drawCurve(W,H){
+  if(points.length<2) return;
+  const iscrashed = gamePhase==='crashed';
+  const lineColor = iscrashed ? '#e63946' : '#c8f000';
+  const fillColor1 = iscrashed ? 'rgba(230,57,70,0.0)' : 'rgba(200,240,0,0.0)';
+  const fillColor2 = iscrashed ? 'rgba(230,57,70,0.15)' : 'rgba(200,240,0,0.12)';
+
+  const grad = ctx.createLinearGradient(0,H,W,0);
+  grad.addColorStop(0, fillColor1);
+  grad.addColorStop(1, fillColor2);
+
+  ctx.beginPath();
+  ctx.moveTo(40, H-40);
+  for(let p of points) ctx.lineTo(p.x,p.y);
+  ctx.lineTo(points[points.length-1].x, H-40);
+  ctx.closePath();
+  ctx.fillStyle=grad;
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(40, H-40);
+  for(let p of points) ctx.lineTo(p.x,p.y);
+  ctx.strokeStyle=lineColor;
+  ctx.lineWidth=2.5;
+  ctx.shadowColor=lineColor;
+  ctx.shadowBlur=10;
+  ctx.stroke();
+  ctx.shadowBlur=0;
+}
+
+function drawPlane(x,y){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate(-22*Math.PI/180);
+  // Body
+  ctx.fillStyle='#e8f0ff';
+  ctx.beginPath();
+  ctx.ellipse(0,0,26,9,0,0,Math.PI*2);
+  ctx.fill();
+  // Wing
+  ctx.fillStyle='#c8f000';
+  ctx.beginPath();
+  ctx.moveTo(-4,-2); ctx.lineTo(14,-2); ctx.lineTo(4,-16); ctx.lineTo(-7,-12);
+  ctx.closePath(); ctx.fill();
+  // Tail
+  ctx.fillStyle='#a8cc00';
+  ctx.beginPath();
+  ctx.moveTo(-19,-2); ctx.lineTo(-11,-2); ctx.lineTo(-13,-11); ctx.lineTo(-21,-7);
+  ctx.closePath(); ctx.fill();
+  // Engine
+  ctx.shadowColor='#f97316';
+  ctx.shadowBlur=18;
+  ctx.fillStyle='#f97316';
+  ctx.beginPath(); ctx.arc(-28,0,5,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.restore();
+}
+
+function multToCoords(mult,W,H){
+  const t=Math.log(mult);
+  const maxT=Math.log(100);
+  const progress=Math.min(t/maxT,1);
+  const x=40+progress*(W-60);
+  const y=(H-40)-progress*(H-80)*0.85;
+  return {x,y};
+}
+
+// ============================================================
+// GAME LOGIC
+// ============================================================
+function startWaiting(){
+  gamePhase='waiting';
+  betPlaced=false;
+  cashedOut=false;
+  cashedOutAt=0;
+  points=[];
+  currentMult=1.0;
+  cancelAnimationFrame(animFrame);
+  updateMultDisplay(1.0,'waiting');
+  document.getElementById('crashOverlay').classList.remove('show');
+  updateBetBtn();
+  renderFakeLiveBets();
+
+  if(autoTabActive && autoRoundsLeft>0){
+    placeBet();
+    autoRoundsLeft--;
+    document.getElementById('btnSub').textContent=`Auto rounds left: ${autoRoundsLeft}`;
+  }
+
+  let c=5;
+  document.getElementById('nextRoundText').textContent=`Next round in ${c}s...`;
+  countdownTimer=setInterval(()=>{
+    c--;
+    document.getElementById('nextRoundText').textContent=`Next round in ${c}s...`;
+    if(c<=0){ clearInterval(countdownTimer); startFlying(); }
+  },1000);
+
+  animFrame=requestAnimationFrame(loop);
+}
+
+function startFlying(){
+  gamePhase='flying';
+  crashPoint=generateCrashPoint();
+  startTime=performance.now();
+  points=[];
+  currentMult=1.0;
+  updateBetBtn();
+  animFrame=requestAnimationFrame(loop);
+}
+
+function loop(ts){
+  if(gamePhase==='waiting'){
+    resizeCanvas(); drawGame();
+    animFrame=requestAnimationFrame(loop);
+    return;
+  }
+  if(gamePhase!=='flying') return;
+  resizeCanvas();
+  const elapsed=(ts-startTime)/1000;
+  currentMult=Math.max(1.00,parseFloat(Math.pow(Math.E,elapsed*0.15+elapsed*elapsed*0.01).toFixed(2)));
+  const W=canvas.width, H=canvas.height;
+  const pos=multToCoords(currentMult,W,H);
+  planeX=pos.x; planeY=pos.y;
+  points.push({x:pos.x,y:pos.y});
+  drawGame();
+  updateMultDisplay(currentMult,'flying');
+
+  if(betPlaced && !cashedOut && autoCashoutEnabled && currentMult>=autoCashoutAt) doCashout();
+  if(currentMult>=crashPoint){ doCrash(); return; }
+  animFrame=requestAnimationFrame(loop);
+}
+
+function doCrash(){
+  cancelAnimationFrame(animFrame);
+  gamePhase='crashed';
+  if(betPlaced && !cashedOut){
+    stats.losses++;
+    stats.profit-=betAmount;
+    updateStats();
+    showToast(`❌ Lost ₹${betAmount.toFixed(2)}`,'red');
+  }
+  addHistory(crashPoint);
+  updateHistoryUI();
+  document.getElementById('crashMultText').textContent=`at ${crashPoint.toFixed(2)}x`;
+  document.getElementById('crashOverlay').classList.add('show');
+  updateMultDisplay(crashPoint,'crashed');
+  updateBetBtn();
+  renderFakeLiveBets(true);
+  drawGame(); // redraw curve in red
+  setTimeout(()=>startWaiting(),5000);
+}
+
+function addHistory(val){
+  history.unshift(val);
+  if(history.length>12) history=history.slice(0,12);
+}
+
+function updateHistoryUI(){
+  const c=document.getElementById('historyChips');
+  c.innerHTML='';
+  history.forEach(v=>{
+    const chip=document.createElement('span');
+    chip.className='hist-chip '+(v<1.5?'low':v<3?'mid':'high');
+    chip.textContent=v.toFixed(2)+'x';
+    c.appendChild(chip);
+  });
+}
+
+function doCashout(){
+  if(!betPlaced||cashedOut||gamePhase!=='flying') return;
+  cashedOut=true;
+  cashedOutAt=currentMult;
+  const winnings=betAmount*currentMult;
+  balance+=winnings;
+  stats.wins++;
+  stats.profit+=(winnings-betAmount);
+  updateBalance();
+  updateStats();
+  showToast(`✅ Cashed out ₹${winnings.toFixed(2)} at ${currentMult.toFixed(2)}x`,'green');
+  updateBetBtn();
+}
+
+function placeBet(){
+  const amt=parseFloat(document.getElementById('betInput').value);
+  if(isNaN(amt)||amt<10||amt>balance){ showToast('Invalid bet amount','red'); return; }
+  betAmount=amt;
+  betPlaced=true;
+  balance-=betAmount;
+  updateBalance();
+  updateBetBtn();
+  addFakeBet(betAmount);
+  renderFakeLiveBets();
+}
+
+function cancelBet(){
+  if(gamePhase!=='waiting') return;
+  betPlaced=false;
+  balance+=betAmount;
+  updateBalance();
+  updateBetBtn();
+}
+
+function handleBetBtn(){
+  if(gamePhase==='waiting'){
+    if(betPlaced) cancelBet(); else placeBet();
+  } else if(gamePhase==='flying'){
+    if(betPlaced && !cashedOut) doCashout();
+  }
+}
+
+// ============================================================
+// UI HELPERS
+// ============================================================
+function updateMultDisplay(val,phase){
+  const el=document.getElementById('multValue');
+  const lbl=document.getElementById('multLabel');
+  el.textContent=val.toFixed(2)+'x';
+  if(phase==='crashed'){
+    el.style.color='var(--red)';
+    lbl.textContent='FLEW AWAY!';
+  } else if(phase==='waiting'){
+    el.style.color='var(--muted)';
+    lbl.textContent='WAITING FOR BETS';
+  } else {
+    const pct=Math.min((val-1)/8,1);
+    if(pct<0.5){
+      el.style.color=`hsl(${73+pct*40},100%,${50+pct*5}%)`;
+    } else {
+      el.style.color=`hsl(${73+(pct*60)},100%,55%)`;
+    }
+    lbl.textContent='FLYING — CASH OUT?';
+  }
+}
+
+function updateBetBtn(){
+  const btn=document.getElementById('betBtn');
+  const sub=document.getElementById('btnSub');
+  btn.className='bet-btn';
+  if(gamePhase==='waiting'){
+    if(betPlaced){
+      btn.classList.add('cancel');
+      btn.innerHTML=`Cancel Bet <span class="btn-sub">₹${betAmount.toFixed(2)} queued for next round</span>`;
+    } else {
+      btn.classList.add('place');
+      btn.innerHTML=`Place Bet <span class="btn-sub">Click to join next round</span>`;
+    }
+  } else if(gamePhase==='flying'){
+    if(betPlaced && !cashedOut){
+      btn.classList.add('cashout');
+      btn.innerHTML=`💰 Cash Out @ ${currentMult.toFixed(2)}x <span class="btn-sub">≈ ₹${(betAmount*currentMult).toFixed(2)}</span>`;
+    } else {
+      btn.classList.add('waiting');
+      btn.innerHTML=cashedOut
+        ?`✅ Cashed Out <span class="btn-sub">at ${cashedOutAt.toFixed(2)}x</span>`
+        :`Round in Progress <span class="btn-sub">Bet next round</span>`;
+    }
+  } else {
+    btn.classList.add('waiting');
+    btn.innerHTML=`Next Round Soon <span class="btn-sub">Preparing next round...</span>`;
+  }
+}
+
+function updateBalance(){
+  document.getElementById('balanceDisplay').textContent='₹'+balance.toFixed(2);
+}
+
+function updateStats(){
+  document.getElementById('statWins').textContent=stats.wins;
+  document.getElementById('statLosses').textContent=stats.losses;
+  const p=stats.profit;
+  const el=document.getElementById('statProfit');
+  el.textContent=(p>=0?'+':'')+'₹'+Math.abs(p).toFixed(0);
+  el.className='stat-val '+(p>=0?'gold':'red');
+}
+
+function adjustBet(d){ const i=document.getElementById('betInput'); i.value=Math.max(10,Math.min(10000,(parseInt(i.value)||50)+d)); }
+function setBet(v){ document.getElementById('betInput').value=v; }
+function adjustAutoRounds(d){ const i=document.getElementById('autoRoundsInput'); i.value=Math.max(1,Math.min(50,(parseInt(i.value)||5)+d)); }
+
+function toggleAutoCashout(){
+  autoCashoutEnabled=document.getElementById('autoCashoutToggle').checked;
+  document.getElementById('cashoutAtControl').classList.toggle('disabled',!autoCashoutEnabled);
+}
+
+function switchTab(tab){
+  autoTabActive=(tab==='auto');
+  document.getElementById('tabManual').classList.toggle('active',!autoTabActive);
+  document.getElementById('tabAuto').classList.toggle('active',autoTabActive);
+  document.getElementById('autoBetPanel').style.display=autoTabActive?'block':'none';
+}
+
+// Fake bets
+function addFakeBet(myAmt){
+  fakeBets=[];
+  const count=Math.floor(Math.random()*5)+3;
+  for(let i=0;i<count;i++){
+    fakeBets.push({ name:fakeNames[Math.floor(Math.random()*fakeNames.length)], bet:Math.floor(Math.random()*500)+10, status:'playing', cashMult:0 });
+  }
+  fakeBets.push({name:'You',bet:myAmt,status:'playing',cashMult:0});
+}
+
+function renderFakeLiveBets(final=false){
+  const container=document.getElementById('liveBets');
+  document.getElementById('liveBetCount').textContent=fakeBets.length||0;
+  if(!fakeBets.length){ container.innerHTML='<div style="padding:8px 12px;color:var(--muted);font-size:0.78rem;">Waiting for players...</div>'; return; }
+  if(final){
+    fakeBets.forEach(fb=>{
+      if(fb.status==='playing'){
+        if(Math.random()>0.45){
+          fb.status='win';
+          fb.cashMult=1.1+Math.random()*(crashPoint-1.1);
+          if(fb.cashMult>=crashPoint) fb.cashMult=crashPoint-0.01;
+        } else { fb.status='lost'; }
+      }
+    });
+  }
+  container.innerHTML='';
+  fakeBets.slice(-5).forEach(fb=>{
+    const row=document.createElement('div'); row.className='lb-row';
+    const multHtml=fb.status==='playing'
+      ?`<span class="lb-mult playing">${currentMult.toFixed(2)}x</span>`
+      :fb.status==='win'
+      ?`<span class="lb-mult win">+₹${(fb.bet*fb.cashMult).toFixed(0)} @ ${fb.cashMult.toFixed(2)}x</span>`
+      :`<span class="lb-mult lost">Lost</span>`;
+    row.innerHTML=`<span class="lb-name">${fb.name}</span><span class="lb-bet">₹${fb.bet}</span>${multHtml}`;
+    container.appendChild(row);
+  });
+}
+
+function showToast(msg,type='green'){
+  const t=document.createElement('div');
+  t.style.cssText=`position:fixed;bottom:24px;right:24px;z-index:9999;
+    padding:11px 18px;border-radius:7px;
+    font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.9rem;
+    animation:popIn 0.3s ease;
+    background:${type==='green'?'rgba(34,197,94,0.12)':'rgba(230,57,70,0.12)'};
+    border:1px solid ${type==='green'?'rgba(34,197,94,0.35)':'rgba(230,57,70,0.35)'};
+    color:${type==='green'?'var(--green)':'var(--red)'};
+    backdrop-filter:blur(8px);`;
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),3000);
+}
+
+// Random player count
+setInterval(()=>{
+  const el=document.getElementById('playerCount');
+  if(el) el.textContent=Math.floor(800+Math.random()*200);
+},4000);
+
+document.getElementById('autoCashoutVal').addEventListener('change',()=>{
+  autoCashoutAt=parseFloat(document.getElementById('autoCashoutVal').value)||2.0;
+});
+
+window.addEventListener('resize',()=>{ resizeCanvas(); drawGame(); });
+resizeCanvas();
+startWaiting();
+</script>
+</body>
+</html>

@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BetX — Wallet</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f0f;--bg2:#161616;--bg3:#1e1e1e;--bg4:#252525;--yellow:#d4e800;--yellow-dim:#a0b000;--yellow-bg:rgba(212,232,0,0.08);--red:#ff3b3b;--green:#1db954;--white:#f0f0f0;--muted:#888;--border:rgba(255,255,255,0.07);--top-h:54px;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;display:flex;flex-direction:column;}
+.topnav{height:var(--top-h);flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;z-index:100;position:sticky;top:0;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--yellow);text-shadow:0 0 18px rgba(212,232,0,0.35);margin-right:28px;}
+.logo span{color:#fff;}
+.nav-links{display:flex;gap:2px;flex:1;}
+.nav-link{padding:8px 14px;font-size:0.8rem;font-weight:600;color:var(--muted);border-radius:6px;cursor:pointer;white-space:nowrap;transition:all 0.18s;display:flex;align-items:center;gap:6px;}
+.nav-link:hover{color:var(--white);background:var(--bg3);}
+.nav-link.active{color:var(--yellow);}
+.nav-right{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.btn-back{padding:7px 18px;background:transparent;border:1px solid rgba(255,255,255,0.2);color:var(--white);font-family:'Barlow',sans-serif;font-size:0.82rem;font-weight:700;border-radius:6px;cursor:pointer;transition:all 0.18s;}
+.btn-back:hover{border-color:var(--yellow);color:var(--yellow);}
+.page{max-width:960px;margin:0 auto;padding:28px 20px 60px;width:100%;}
+.page-title{font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:800;letter-spacing:1px;margin-bottom:24px;display:flex;align-items:center;gap:10px;}
+.balance-card{background:linear-gradient(120deg,#1a1f00 0%,#0f1500 50%,#151a00 100%);border:1px solid rgba(212,232,0,0.2);border-radius:16px;padding:28px 28px 24px;margin-bottom:24px;position:relative;overflow:hidden;}
+.balance-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 80% at 90% 50%,rgba(212,232,0,0.07) 0%,transparent 60%);}
+.balance-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;position:relative;z-index:1;}
+.bal-label{font-size:0.72rem;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+.bal-amount{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:800;color:var(--yellow);line-height:1;}
+.bal-amount.green{color:var(--green);}
+.bal-amount.muted{color:var(--white);}
+.bal-sub{font-size:0.72rem;color:var(--muted);margin-top:4px;}
+.pending-wd-note{display:none;margin-top:16px;position:relative;z-index:1;background:rgba(255,59,59,0.07);border:1px solid rgba(255,59,59,0.2);border-radius:8px;padding:10px 14px;font-size:0.78rem;color:#ff9a9a;gap:8px;align-items:center;}
+.balance-actions{display:flex;gap:10px;margin-top:22px;position:relative;z-index:1;}
+.bal-btn{padding:10px 28px;font-family:'Barlow',sans-serif;font-size:0.85rem;font-weight:800;border-radius:8px;cursor:pointer;transition:all 0.18s;letter-spacing:0.8px;text-transform:uppercase;border:none;}
+.bal-btn.deposit{background:var(--yellow);color:#111;}
+.bal-btn.deposit:hover{background:#e8ff00;box-shadow:0 0 18px rgba(212,232,0,0.35);}
+.bal-btn.withdraw{background:transparent;border:1px solid rgba(255,255,255,0.2);color:var(--white);}
+.bal-btn.withdraw:hover{border-color:var(--yellow);color:var(--yellow);}
+.tab-bar{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:20px;}
+.tab{flex:1;padding:10px;background:transparent;border:none;color:var(--muted);font-family:'Barlow',sans-serif;font-size:0.85rem;font-weight:700;border-radius:7px;cursor:pointer;transition:all 0.18s;letter-spacing:0.5px;}
+.tab.active{background:var(--yellow);color:#111;}
+.panel{display:none;}
+.panel.active{display:block;}
+.form-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;}
+.form-section-title{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:0.5px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.methods-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.method-btn{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:all 0.18s;}
+.method-btn:hover{border-color:rgba(212,232,0,0.3);}
+.method-btn.selected{border-color:var(--yellow);background:var(--yellow-bg);}
+.method-icon{font-size:1.8rem;}
+.method-name{font-size:0.72rem;font-weight:700;color:var(--muted);text-align:center;}
+.method-btn.selected .method-name{color:var(--yellow);}
+.qr-box{background:var(--bg3);border:1px solid rgba(212,232,0,0.2);border-radius:12px;padding:24px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px;}
+.qr-img{width:200px;height:200px;border-radius:10px;border:2px solid rgba(212,232,0,0.35);object-fit:contain;background:#fff;padding:8px;}
+.qr-fallback{display:none;width:200px;height:200px;border-radius:10px;border:2px dashed rgba(212,232,0,0.25);flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);font-size:0.8rem;text-align:center;padding:16px;}
+.qr-upi-label{font-size:0.72rem;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;font-weight:700;text-align:center;}
+.qr-upi-id{font-size:1.05rem;font-weight:800;color:var(--yellow);text-align:center;}
+.qr-note{background:rgba(212,232,0,0.06);border:1px solid rgba(212,232,0,0.15);border-radius:6px;padding:10px 14px;font-size:0.74rem;color:var(--muted);text-align:center;line-height:1.7;width:100%;}
+.upload-zone{border:2px dashed rgba(212,232,0,0.25);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;margin-bottom:14px;transition:all 0.2s;background:var(--bg3);}
+.upload-zone:hover{border-color:rgba(212,232,0,0.5);background:rgba(212,232,0,0.04);}
+.up-icon{font-size:2rem;margin-bottom:8px;}
+.up-title{font-size:0.85rem;font-weight:700;color:var(--white);margin-bottom:4px;}
+.up-sub{font-size:0.72rem;color:var(--muted);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-label{font-size:0.72rem;font-weight:700;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;}
+.form-input{background:var(--bg3);border:1px solid var(--border);color:var(--white);font-family:'Barlow',sans-serif;font-size:0.95rem;font-weight:600;padding:11px 14px;border-radius:8px;outline:none;transition:border-color 0.18s;width:100%;}
+.form-input:focus{border-color:var(--yellow);}
+.form-input::placeholder{color:rgba(136,136,128,0.5);}
+.form-hint{font-size:0.7rem;color:var(--muted);margin-top:3px;}
+.quick-amounts{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.quick-amt{padding:7px 18px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-family:'Barlow',sans-serif;font-size:0.82rem;font-weight:700;border-radius:6px;cursor:pointer;transition:all 0.18s;}
+.quick-amt:hover,.quick-amt.active{border-color:var(--yellow);color:var(--yellow);background:var(--yellow-bg);}
+.submit-btn{width:100%;padding:13px;background:var(--yellow);color:#111;font-family:'Barlow',sans-serif;font-size:0.95rem;font-weight:800;border:none;border-radius:9px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all 0.18s;margin-top:6px;}
+.submit-btn:hover{background:#e8ff00;box-shadow:0 0 18px rgba(212,232,0,0.3);}
+.submit-btn:disabled{opacity:0.5;cursor:not-allowed;}
+.submit-btn.red{background:var(--red);color:#fff;}
+.submit-btn.red:hover{background:#ff5555;box-shadow:0 0 18px rgba(255,59,59,0.3);}
+.info-box{background:rgba(212,232,0,0.05);border:1px solid rgba(212,232,0,0.15);border-radius:8px;padding:12px 14px;font-size:0.78rem;color:var(--muted);line-height:1.6;margin-bottom:14px;display:flex;gap:10px;align-items:flex-start;}
+.info-box.warn{background:rgba(255,59,59,0.05);border-color:rgba(255,59,59,0.2);}
+.tx-filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.tx-filter{padding:6px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-size:0.78rem;font-weight:700;border-radius:20px;cursor:pointer;transition:all 0.18s;}
+.tx-filter.active{background:var(--yellow-bg);border-color:var(--yellow);color:var(--yellow);}
+.tx-list{display:flex;flex-direction:column;gap:8px;}
+.tx-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;}
+.tx-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+.tx-icon.deposit{background:rgba(29,185,84,0.12);}
+.tx-icon.withdraw{background:rgba(255,59,59,0.12);}
+.tx-icon.bet{background:rgba(212,232,0,0.1);}
+.tx-icon.win{background:rgba(29,185,84,0.15);}
+.tx-info{flex:1;}
+.tx-title{font-size:0.88rem;font-weight:700;margin-bottom:2px;}
+.tx-meta{font-size:0.72rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;}
+.tx-status{font-size:0.65rem;font-weight:800;padding:2px 8px;border-radius:10px;letter-spacing:0.5px;}
+.tx-status.success{background:rgba(29,185,84,0.12);color:var(--green);}
+.tx-status.pending{background:rgba(212,232,0,0.1);color:var(--yellow);}
+.tx-status.failed,.tx-status.rejected{background:rgba(255,59,59,0.12);color:var(--red);}
+.tx-amount{font-family:'Barlow Condensed',sans-serif;font-size:1.15rem;font-weight:800;text-align:right;}
+.tx-amount.plus{color:var(--green);}
+.tx-amount.minus{color:var(--red);}
+.tx-amount-sub{font-size:0.68rem;color:var(--muted);text-align:right;margin-top:1px;}
+.empty-state{text-align:center;padding:50px 20px;color:var(--muted);}
+.empty-state .e-icon{font-size:3rem;opacity:0.3;margin-bottom:12px;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:30px;width:420px;box-shadow:0 24px 64px rgba(0,0,0,0.6);animation:modalIn 0.25s ease;}
+@keyframes modalIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.modal-sub{font-size:0.82rem;color:var(--muted);margin-bottom:20px;}
+.modal-amount{font-family:'Barlow Condensed',sans-serif;font-size:2.5rem;font-weight:800;color:var(--yellow);text-align:center;margin:18px 0;}
+.modal-detail{background:var(--bg3);border-radius:8px;padding:14px;margin-bottom:16px;}
+.modal-row{display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:8px;gap:10px;}
+.modal-row:last-child{margin-bottom:0;}
+.modal-row .label{color:var(--muted);flex-shrink:0;}
+.modal-row .val{font-weight:700;text-align:right;word-break:break-all;}
+.modal-btns{display:flex;gap:10px;}
+.modal-btn{flex:1;padding:11px;border-radius:8px;font-family:'Barlow',sans-serif;font-size:0.88rem;font-weight:800;cursor:pointer;transition:all 0.18s;border:none;}
+.modal-btn.confirm{background:var(--yellow);color:#111;}
+.modal-btn.confirm:hover{background:#e8ff00;}
+.modal-btn.cancel{background:var(--bg3);color:var(--muted);border:1px solid var(--border);}
+.modal-btn.cancel:hover{color:var(--white);}
+.success-screen{display:none;text-align:center;padding:10px 0;}
+.success-icon{width:72px;height:72px;border-radius:50%;background:rgba(29,185,84,0.12);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 16px;}
+.success-screen h3{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:800;margin-bottom:8px;}
+.success-screen p{font-size:0.82rem;color:var(--muted);}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--bg3);border:1px solid var(--border);color:var(--white);padding:10px 22px;border-radius:8px;font-size:0.85rem;z-index:9999;transition:transform 0.3s cubic-bezier(.16,1,.3,1);box-shadow:0 10px 30px rgba(0,0,0,0.5);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(0,0,0,0.3);border-top-color:#111;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">BET<span>X</span></div>
+  <div class="nav-links">
+    <div class="nav-link" onclick="window.location.href='dashboard.html'">📡 Live Events</div>
+    <div class="nav-link active">💰 Wallet</div>
+    <div class="nav-link">🎁 Promotions</div>
+    <div class="nav-link">📋 My Bets</div>
+  </div>
+  <div class="nav-right">
+    <div id="navUserInfo" style="display:flex;align-items:center;gap:10px;">
+      <div style="width:32px;height:32px;background:var(--yellow);color:#111;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;" id="navUserAvatar">?</div>
+      <span style="font-size:0.88rem;font-weight:600;" id="navUserName">User</span>
+    </div>
+    <button class="btn-back" onclick="window.location.href='dashboard.html'">← Dashboard</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-title">💰 My Wallet</div>
+
+  <div class="balance-card">
+    <div class="balance-grid">
+      <div>
+        <div class="bal-label">Total Balance</div>
+        <div class="bal-amount" id="totalBal">₹0.00</div>
+        <div class="bal-sub">Available to bet & withdraw</div>
+      </div>
+      <div>
+        <div class="bal-label">Bonus Balance</div>
+        <div class="bal-amount green">₹0.00</div>
+        <div class="bal-sub">Wagering requirement: 5x</div>
+      </div>
+      <div>
+        <div class="bal-label">Total Deposited</div>
+        <div class="bal-amount muted" id="totalDeposited">₹0.00</div>
+        <div class="bal-sub">Lifetime deposits</div>
+      </div>
+    </div>
+    <div class="pending-wd-note" id="pendingWdNote">
+      ⏳ You have a withdrawal request pending admin approval. Funds will be processed within 24–48 hours.
+    </div>
+    <div class="balance-actions">
+      <button class="bal-btn deposit" onclick="showTab('deposit')">⬇ Deposit</button>
+      <button class="bal-btn withdraw" onclick="showTab('withdraw')">⬆ Withdraw</button>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab active" id="tab-deposit" onclick="showTab('deposit')">⬇ Deposit</button>
+    <button class="tab" id="tab-withdraw" onclick="showTab('withdraw')">⬆ Withdraw</button>
+    <button class="tab" id="tab-history" onclick="showTab('history')">📋 History</button>
+  </div>
+
+  <!-- DEPOSIT PANEL -->
+  <div class="panel active" id="panel-deposit">
+    <div class="form-card">
+      <div class="form-section-title">💳 Select Payment Method</div>
+      <div class="methods-grid">
+        <div class="method-btn selected" onclick="selectMethod(this,'UPI','dep')"><div class="method-icon">📱</div><div class="method-name">UPI</div></div>
+        <div class="method-btn" onclick="selectMethod(this,'Net Banking','dep')"><div class="method-icon">🏦</div><div class="method-name">Net Banking</div></div>
+        <div class="method-btn" onclick="selectMethod(this,'Card','dep')"><div class="method-icon">💳</div><div class="method-name">Debit/Credit Card</div></div>
+        <div class="method-btn" onclick="selectMethod(this,'Crypto','dep')"><div class="method-icon">₿</div><div class="method-name">Crypto</div></div>
+      </div>
+      <div class="form-section-title">📲 Scan & Pay</div>
+      <div class="qr-box">
+        <img src="your-qr-code.png" alt="Payment QR Code" class="qr-img" onerror="this.style.display='none';document.getElementById('qrFallback').style.display='flex'">
+        <div class="qr-fallback" id="qrFallback"><span style="font-size:2.5rem;">📷</span><span>QR image not found<br><small>Set src to your QR file</small></span></div>
+        <div style="text-align:center;"><div class="qr-upi-label">Pay to UPI ID</div><div class="qr-upi-id">yourupi@bank</div></div>
+        <div class="qr-note">📌 Scan the QR or pay to the UPI ID above.<br>Then upload your payment screenshot and enter UTR number below.</div>
+      </div>
+      <div class="form-section-title">💰 Enter Amount</div>
+      <div class="quick-amounts">
+        <div class="quick-amt active" onclick="setAmt(this,'depositAmt',500)">₹500</div>
+        <div class="quick-amt" onclick="setAmt(this,'depositAmt',1000)">₹1,000</div>
+        <div class="quick-amt" onclick="setAmt(this,'depositAmt',2000)">₹2,000</div>
+        <div class="quick-amt" onclick="setAmt(this,'depositAmt',5000)">₹5,000</div>
+        <div class="quick-amt" onclick="setAmt(this,'depositAmt',10000)">₹10,000</div>
+      </div>
+      <div class="form-group" style="margin-bottom:20px;">
+        <label class="form-label">Amount (₹)</label>
+        <input class="form-input" type="number" id="depositAmt" placeholder="Enter amount" value="500" min="100">
+      </div>
+      <div class="form-section-title">🖼️ Upload Payment Screenshot</div>
+      <div class="upload-zone" onclick="document.getElementById('screenshotInput').click()">
+        <div id="uploadPlaceholder"><div class="up-icon">📤</div><div class="up-title">Click to upload screenshot</div><div class="up-sub">JPG, PNG supported · Max 5MB</div></div>
+        <div id="uploadPreview" style="display:none;"><img id="screenshotPreview" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid rgba(212,232,0,0.3);"><div style="margin-top:10px;font-size:0.78rem;color:var(--green);font-weight:700;">✅ Screenshot uploaded successfully</div><div style="font-size:0.7rem;color:var(--muted);margin-top:3px;">Click to change</div></div>
+      </div>
+      <input type="file" id="screenshotInput" accept="image/*" style="display:none;" onchange="handleScreenshot(this)">
+      <div class="form-section-title">🔢 Transaction Reference</div>
+      <div class="form-group" style="margin-bottom:20px;">
+        <label class="form-label">UTR / Transaction Reference Number</label>
+        <input class="form-input" type="text" id="utrNumber" placeholder="Enter UTR number (e.g. 123456789012)" maxlength="22" style="letter-spacing:1px;">
+        <span class="form-hint">📍 Find UTR in your UPI app under payment history</span>
+      </div>
+      <div class="info-box"><span>ℹ️</span><div>Your deposit will be verified and credited within <strong style="color:var(--yellow)">30 minutes</strong>.</div></div>
+      <button class="submit-btn" id="depositSubmitBtn" onclick="openDepositModal()">Submit Deposit Request →</button>
+    </div>
+  </div>
+
+  <!-- WITHDRAW PANEL -->
+  <div class="panel" id="panel-withdraw">
+    <div class="form-card">
+      <div class="form-section-title">🏦 Withdrawal Method</div>
+      <div class="methods-grid" style="grid-template-columns:repeat(3,1fr)" id="wdMethodGrid">
+        <div class="method-btn selected" onclick="selectMethod(this,'Bank Transfer','wd')"><div class="method-icon">🏦</div><div class="method-name">Bank Transfer</div></div>
+        <div class="method-btn" onclick="selectMethod(this,'UPI Withdrawal','wd')"><div class="method-icon">📱</div><div class="method-name">UPI</div></div>
+        <div class="method-btn" onclick="selectMethod(this,'Crypto Withdrawal','wd')"><div class="method-icon">₿</div><div class="method-name">Crypto</div></div>
+      </div>
+      <div class="form-section-title">💰 Withdrawal Amount</div>
+      <div class="quick-amounts">
+        <div class="quick-amt active" onclick="setAmt(this,'withdrawAmt',500)">₹500</div>
+        <div class="quick-amt" onclick="setAmt(this,'withdrawAmt',1000)">₹1,000</div>
+        <div class="quick-amt" onclick="setAmt(this,'withdrawAmt',2000)">₹2,000</div>
+        <div class="quick-amt" onclick="setAmt(this,'withdrawAmt',5000)">₹5,000</div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Amount (₹)</label>
+          <input class="form-input" type="number" id="withdrawAmt" placeholder="Min ₹500" value="500">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account Holder Name</label>
+          <input class="form-input" type="text" id="accName" placeholder="Full name as per bank">
+        </div>
+      </div>
+      <!-- Bank fields -->
+      <div id="bankFields">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Bank Account Number</label>
+            <input class="form-input" type="text" id="accNum" placeholder="Enter account number">
+          </div>
+          <div class="form-group">
+            <label class="form-label">IFSC Code</label>
+            <input class="form-input" type="text" id="ifsc" placeholder="e.g. SBIN0001234">
+          </div>
+        </div>
+      </div>
+      <!-- UPI field (hidden by default) -->
+      <div id="upiWdField" style="display:none;margin-bottom:14px;">
+        <div class="form-group">
+          <label class="form-label">UPI ID</label>
+          <input class="form-input" type="text" id="withdrawUpiId" placeholder="e.g. yourname@upi">
+        </div>
+      </div>
+      <div class="info-box warn" style="display:flex;">
+        <span>⚠️</span>
+        <div>Your request goes to <strong style="color:#ff9a9a">admin for approval first</strong>. Your balance is <strong style="color:#ff9a9a">not deducted</strong> until the admin approves. Processing time: 24–48 hours.</div>
+      </div>
+      <button class="submit-btn red" id="withdrawSubmitBtn" onclick="openWithdrawModal()">Request Withdrawal →</button>
+    </div>
+  </div>
+
+  <!-- HISTORY PANEL -->
+  <div class="panel" id="panel-history">
+    <div class="tx-filters">
+      <div class="tx-filter active" onclick="filterTx(this,'all')">All</div>
+      <div class="tx-filter" onclick="filterTx(this,'deposit')">Deposits</div>
+      <div class="tx-filter" onclick="filterTx(this,'withdraw')">Withdrawals</div>
+      <div class="tx-filter" onclick="filterTx(this,'bet')">Bets</div>
+      <div class="tx-filter" onclick="filterTx(this,'win')">Winnings</div>
+    </div>
+    <div class="tx-list" id="txList"></div>
+  </div>
+</div>
+
+<!-- DEPOSIT MODAL -->
+<div class="modal-overlay" id="depositModal">
+  <div class="modal">
+    <div id="depositFormView">
+      <div class="modal-title">⬇ Confirm Deposit</div>
+      <div class="modal-sub">Review your deposit details before confirming.</div>
+      <div class="modal-amount" id="modalDepAmt">₹500</div>
+      <div class="modal-detail">
+        <div class="modal-row"><span class="label">Payment Method</span><span class="val" id="modalDepMethod">UPI</span></div>
+        <div class="modal-row"><span class="label">UTR Number</span><span class="val" id="modalDepUTR">—</span></div>
+        <div class="modal-row"><span class="label">Screenshot</span><span class="val" style="color:var(--green)" id="modalDepSS">—</span></div>
+        <div class="modal-row" style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;"><span class="label">You will receive</span><span class="val" style="color:var(--yellow)" id="modalDepReceive">₹500</span></div>
+      </div>
+      <div class="modal-btns">
+        <button class="modal-btn cancel" onclick="closeModals()">Cancel</button>
+        <button class="modal-btn confirm" id="confirmDepBtn" onclick="confirmDeposit()">Confirm Deposit</button>
+      </div>
+    </div>
+    <div class="success-screen" id="depositSuccessView">
+      <div class="success-icon">✅</div>
+      <h3>Request Submitted!</h3>
+      <p>Your deposit is under review. Funds will be credited within 30 minutes after verification.</p>
+      <br><button class="modal-btn confirm" style="width:100%;margin-top:10px;" onclick="closeModals()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- WITHDRAW MODAL -->
+<div class="modal-overlay" id="withdrawModal">
+  <div class="modal">
+    <div id="withdrawFormView">
+      <div class="modal-title">⬆ Confirm Withdrawal Request</div>
+      <div class="modal-sub">Your request will be sent to admin. <strong style="color:var(--yellow)">Balance is NOT deducted until approved.</strong></div>
+      <div class="modal-amount" id="modalWdAmt" style="color:var(--red)">₹500</div>
+      <div class="modal-detail">
+        <div class="modal-row"><span class="label">Method</span><span class="val" id="modalWdMethod">—</span></div>
+        <div class="modal-row"><span class="label">Account / UPI</span><span class="val" id="modalWdAcc">—</span></div>
+        <div class="modal-row"><span class="label">Account Holder</span><span class="val" id="modalWdName">—</span></div>
+        <div class="modal-row"><span class="label">IFSC</span><span class="val" id="modalWdIfsc">—</span></div>
+        <div class="modal-row" style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;"><span class="label">Status</span><span class="val" style="color:var(--yellow)">⏳ Pending Admin Approval</span></div>
+      </div>
+      <div class="modal-btns">
+        <button class="modal-btn cancel" onclick="closeModals()">Cancel</button>
+        <button class="modal-btn confirm" style="background:var(--red);color:#fff;" id="confirmWdBtn" onclick="confirmWithdraw()">Submit Request</button>
+      </div>
+    </div>
+    <div class="success-screen" id="withdrawSuccessView">
+      <div class="success-icon" style="border-color:var(--yellow);background:rgba(212,232,0,0.08);">⏳</div>
+      <h3>Request Submitted!</h3>
+      <p>Pending admin approval. Funds deducted only after approval. Processing time: 24–48 hours.</p>
+      <br><button class="modal-btn confirm" style="width:100%;margin-top:10px;" onclick="closeModals()">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyDwClzaSsO9iamgBDctSfMEW6W5B88TkdQ",
+  authDomain:"parione-ee49d.firebaseapp.com",
+  projectId:"parione-ee49d",
+  storageBucket:"parione-ee49d.firebasestorage.app",
+  messagingSenderId:"824927188460",
+  appId:"1:824927188460:web:10cf0f5df2e4b01e293cc9"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+window._db = db; window._addDoc = addDoc; window._collection = collection; window._Timestamp = Timestamp;
+
+let balance=0, totalDeposited=0, currentUser=null, allUsers=[];
+let selectedDepMethod='UPI', selectedWdMethod='Bank Transfer', screenshotBase64=null;
+
+function getPhone(){ const s=sessionStorage.getItem('betx_session'); return s?JSON.parse(s).phone:null; }
+function getTxKey(){ const p=getPhone(); return p?'betx_txs_'+p:'betx_txs_guest'; }
+let transactions=[];
+
+function loadUser(){
+  const phone=getPhone(); if(!phone)return null;
+  allUsers=JSON.parse(localStorage.getItem('betx_users')||'[]');
+  currentUser=allUsers.find(u=>String(u.phone)===String(phone));
+  transactions=JSON.parse(localStorage.getItem(getTxKey())||'[]');
+  return currentUser;
+}
+function saveBalance(){
+  if(!currentUser)return;
+  currentUser.balance=balance; currentUser.totalDeposited=totalDeposited;
+  localStorage.setItem('betx_users',JSON.stringify(allUsers));
+}
+function fmt(n){ return '₹'+n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+function renderBalance(){
+  document.getElementById('totalBal').textContent=fmt(balance);
+  document.getElementById('totalDeposited').textContent=fmt(totalDeposited);
+  const hasPending=transactions.some(t=>t.type==='withdraw'&&t.status==='pending');
+  const note=document.getElementById('pendingWdNote');
+  note.style.display=hasPending?'flex':'none';
+}
+function addTx(tx){
+  const now=new Date();
+  tx.date=now.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+  tx.time=now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  transactions.unshift(tx);
+  localStorage.setItem(getTxKey(),JSON.stringify(transactions));
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  const user=loadUser();
+  if(!user){document.getElementById('navUserName').textContent='Guest';showToast('Please log in');return;}
+  document.getElementById('navUserName').textContent=user.name.split(' ')[0];
+  document.getElementById('navUserAvatar').textContent=user.name[0].toUpperCase();
+  balance=parseFloat(user.balance)||0;
+  totalDeposited=parseFloat(user.totalDeposited)||0;
+  renderBalance();
+});
+window.addEventListener('storage',()=>{ const u=loadUser(); if(!u)return; balance=parseFloat(u.balance)||0; totalDeposited=parseFloat(u.totalDeposited)||0; renderBalance(); });
+window.addEventListener('focus',()=>window.dispatchEvent(new Event('storage')));
+
+window.showTab=function(tab){
+  ['deposit','withdraw','history'].forEach(t=>{
+    document.getElementById('tab-'+t).classList.remove('active');
+    document.getElementById('panel-'+t).classList.remove('active');
+  });
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.getElementById('panel-'+tab).classList.add('active');
+  if(tab==='history')renderTx('all');
+};
+
+window.selectMethod=function(el,name,mode){
+  el.closest('.methods-grid').querySelectorAll('.method-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  if(mode==='dep'){ selectedDepMethod=name; }
+  else {
+    selectedWdMethod=name;
+    document.getElementById('bankFields').style.display=(name==='UPI Withdrawal')?'none':'block';
+    document.getElementById('upiWdField').style.display=(name==='UPI Withdrawal')?'block':'none';
+  }
+};
+
+window.setAmt=function(el,fieldId,amt){
+  el.closest('.quick-amounts').querySelectorAll('.quick-amt').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(fieldId).value=amt;
+};
+
+window.handleScreenshot=function(input){
+  const file=input.files[0]; if(!file)return;
+  if(file.size>5*1024*1024){showToast('File too large. Max 5MB');input.value='';return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    screenshotBase64=e.target.result;
+    document.getElementById('screenshotPreview').src=screenshotBase64;
+    document.getElementById('uploadPlaceholder').style.display='none';
+    document.getElementById('uploadPreview').style.display='block';
+  };
+  reader.readAsDataURL(file);
+};
+
+// ── DEPOSIT ──
+window.openDepositModal=function(){
+  const amt=parseFloat(document.getElementById('depositAmt').value);
+  const utr=document.getElementById('utrNumber').value.trim();
+  if(!amt||amt<100){showToast('Minimum deposit is ₹100');return;}
+  if(!screenshotBase64){showToast('Please upload payment screenshot');return;}
+  if(!utr||utr.length<8){showToast('Please enter valid UTR number');return;}
+  document.getElementById('modalDepAmt').textContent='₹'+amt.toLocaleString('en-IN');
+  document.getElementById('modalDepMethod').textContent=selectedDepMethod;
+  document.getElementById('modalDepUTR').textContent=utr;
+  document.getElementById('modalDepSS').textContent='✅ Screenshot ready';
+  document.getElementById('modalDepReceive').textContent='₹'+amt.toLocaleString('en-IN');
+  document.getElementById('depositFormView').style.display='block';
+  document.getElementById('depositSuccessView').style.display='none';
+  document.getElementById('depositModal').classList.add('show');
+};
+
+window.confirmDeposit=async function(){
+  const btn=document.getElementById('confirmDepBtn');
+  const amt=parseFloat(document.getElementById('depositAmt').value);
+  const utr=document.getElementById('utrNumber').value.trim();
+  const user=loadUser();
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Saving...';
+  try{
+    await _addDoc(_collection(db,'payments'),{
+      username:user?user.name:'Guest',phone:user?user.phone:'unknown',
+      amount:amt,utr:utr,method:selectedDepMethod,screenshot:screenshotBase64,
+      status:'pending',submittedAt:_Timestamp.now()
+    });
+    balance+=amt; totalDeposited+=amt; saveBalance(); renderBalance();
+    addTx({type:'deposit',title:'Deposit via '+selectedDepMethod+' · UTR: '+utr,amount:amt,status:'pending'});
+    document.getElementById('depositFormView').style.display='none';
+    document.getElementById('depositSuccessView').style.display='block';
+    screenshotBase64=null;
+    document.getElementById('utrNumber').value='';
+    document.getElementById('screenshotInput').value='';
+    document.getElementById('uploadPlaceholder').style.display='block';
+    document.getElementById('uploadPreview').style.display='none';
+  }catch(err){console.error(err);showToast('❌ Failed to save. Check connection.');}
+  btn.disabled=false; btn.innerHTML='Confirm Deposit';
+};
+
+// ── WITHDRAWAL — saves to Firestore "withdrawals", does NOT touch balance ──
+window.openWithdrawModal=function(){
+  const amt=parseFloat(document.getElementById('withdrawAmt').value);
+  const name=document.getElementById('accName').value.trim();
+  const acc=document.getElementById('accNum').value.trim();
+  const ifsc=document.getElementById('ifsc').value.trim();
+  const upiId=document.getElementById('withdrawUpiId').value.trim();
+  if(!amt||amt<500){showToast('Minimum withdrawal is ₹500');return;}
+  if(amt>balance){showToast('Insufficient balance!');return;}
+  if(!name){showToast('Please enter account holder name');return;}
+  if(selectedWdMethod==='UPI Withdrawal'&&!upiId){showToast('Please enter your UPI ID');return;}
+  if(selectedWdMethod==='Bank Transfer'){
+    if(!acc){showToast('Please enter account number');return;}
+    if(!ifsc){showToast('Please enter IFSC code');return;}
+  }
+  const displayAcc=selectedWdMethod==='UPI Withdrawal'?upiId:(acc.length>4?'****'+acc.slice(-4):acc);
+  document.getElementById('modalWdAmt').textContent='₹'+amt.toLocaleString('en-IN');
+  document.getElementById('modalWdMethod').textContent=selectedWdMethod;
+  document.getElementById('modalWdAcc').textContent=displayAcc||'—';
+  document.getElementById('modalWdName').textContent=name;
+  document.getElementById('modalWdIfsc').textContent=(selectedWdMethod==='UPI Withdrawal')?'N/A':(ifsc||'—');
+  document.getElementById('withdrawFormView').style.display='block';
+  document.getElementById('withdrawSuccessView').style.display='none';
+  document.getElementById('withdrawModal').classList.add('show');
+};
+
+window.confirmWithdraw=async function(){
+  const btn=document.getElementById('confirmWdBtn');
+  const amt=parseFloat(document.getElementById('withdrawAmt').value);
+  const name=document.getElementById('accName').value.trim();
+  const acc=document.getElementById('accNum').value.trim();
+  const ifsc=document.getElementById('ifsc').value.trim();
+  const upiId=document.getElementById('withdrawUpiId').value.trim();
+  const user=loadUser();
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Submitting...';
+  try{
+    // ✅ Save to Firestore "withdrawals" collection — balance NOT touched yet
+    await _addDoc(_collection(db,'withdrawals'),{
+      username:user?user.name:'Guest',
+      phone:user?user.phone:'unknown',
+      amount:amt,
+      method:selectedWdMethod,
+      accountName:name,
+      accountNum:acc||'—',
+      ifsc:ifsc||'—',
+      upiId:upiId||'—',
+      status:'pending',
+      submittedAt:_Timestamp.now()
+    });
+    // Record in local history as pending — NO balance deduction
+    addTx({type:'withdraw',title:'Withdrawal Request – '+selectedWdMethod,amount:amt,status:'pending'});
+    renderBalance();
+    document.getElementById('withdrawFormView').style.display='none';
+    document.getElementById('withdrawSuccessView').style.display='block';
+  }catch(err){console.error(err);showToast('❌ Failed to submit. Check connection.');}
+  btn.disabled=false; btn.innerHTML='Submit Request';
+};
+
+window.closeModals=function(){ document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('show')); };
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)window.closeModals();}));
+
+const txIcons={deposit:'⬇',withdraw:'⬆',bet:'🎯',win:'🏆'};
+function renderTx(filter){
+  const list=document.getElementById('txList');
+  const filtered=filter==='all'?transactions:transactions.filter(t=>t.type===filter);
+  if(!filtered.length){list.innerHTML='<div class="empty-state"><div class="e-icon">📋</div><p>No transactions found</p></div>';return;}
+  const isPlus=t=>t.type==='deposit'||t.type==='win';
+  list.innerHTML=filtered.map(t=>`
+    <div class="tx-item">
+      <div class="tx-icon ${t.type}">${txIcons[t.type]||'💰'}</div>
+      <div class="tx-info">
+        <div class="tx-title">${t.title}</div>
+        <div class="tx-meta"><span>${t.date}</span><span>${t.time}</span><span class="tx-status ${t.status}">${t.status.toUpperCase()}</span></div>
+      </div>
+      <div>
+        <div class="tx-amount ${isPlus(t)?'plus':'minus'}">${isPlus(t)?'+':'-'}₹${t.amount.toLocaleString('en-IN')}</div>
+        <div class="tx-amount-sub">${t.type.charAt(0).toUpperCase()+t.type.slice(1)}</div>
+      </div>
+    </div>`).join('');
+}
+window.filterTx=function(el,filter){ document.querySelectorAll('.tx-filter').forEach(b=>b.classList.remove('active')); el.classList.add('active'); renderTx(filter); };
+
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
+window.showToast=showToast;
+</script>
+</body>
+</html>

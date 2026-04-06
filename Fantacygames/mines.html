@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BETX — Mines</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;800;900&family=Barlow+Condensed:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0d0d;
+  --bg2: #111111;
+  --bg3: #161616;
+  --bg4: #1c1c1c;
+  --bg5: #222222;
+  --yellow: #d4e800;
+  --yellow2: #c8dc00;
+  --yellow-glow: rgba(212,232,0,0.18);
+  --yellow-dim: rgba(212,232,0,0.08);
+  --red: #ff3b3b;
+  --green: #39d353;
+  --green-glow: rgba(57,211,83,0.2);
+  --white: #f0f0f0;
+  --muted: #5a5a5a;
+  --muted2: #888;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.10);
+  --panel-w: 300px;
+  --nav-h: 52px;
+  --sub-h: 42px;
+  --bottom-h: 48px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ═══ TOP NAV ═══ */
+.topnav {
+  height: var(--nav-h);
+  flex-shrink: 0;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 0;
+  z-index: 100;
+}
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.55rem;
+  letter-spacing: 3px;
+  color: var(--yellow);
+  text-shadow: 0 0 20px var(--yellow-glow);
+  margin-right: 32px;
+  white-space: nowrap;
+}
+.logo span { color: #fff; }
+.nav-links { display: flex; gap: 2px; flex: 1; }
+.nav-link {
+  padding: 7px 13px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted2);
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border: none;
+  background: none;
+  font-family: 'Barlow', sans-serif;
+}
+.nav-link:hover { color: var(--white); background: var(--bg3); }
+.nav-link.active {
+  color: var(--yellow);
+  background: var(--yellow-dim);
+  border-bottom: 2px solid var(--yellow);
+  border-radius: 6px 6px 0 0;
+}
+.nav-link .badge-live {
+  background: var(--red);
+  color: #fff;
+  font-size: 0.58rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.nav-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.wallet-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 7px;
+  padding: 7px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--white);
+}
+.wallet-badge .w-label { color: var(--muted2); font-size: 0.68rem; margin-right: 2px; }
+.deposit-btn {
+  padding: 7px 18px;
+  background: var(--yellow);
+  color: #111;
+  border: none;
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 900;
+  border-radius: 7px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all 0.15s;
+}
+.deposit-btn:hover { background: #e8ff00; box-shadow: 0 0 16px var(--yellow-glow); }
+
+/* ═══ SUBHEADER / BREADCRUMB ═══ */
+.subheader {
+  height: var(--sub-h);
+  flex-shrink: 0;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 10px;
+  font-size: 0.75rem;
+}
+.breadcrumb { display: flex; align-items: center; gap: 6px; color: var(--muted2); }
+.breadcrumb a { color: var(--muted2); text-decoration: none; cursor: pointer; transition: color 0.15s; }
+.breadcrumb a:hover { color: var(--white); }
+.breadcrumb .sep { color: var(--muted); font-size: 0.65rem; }
+.breadcrumb .current { color: var(--white); font-weight: 600; }
+
+/* ═══ GAME TITLE ROW ═══ */
+.game-title-bar {
+  flex-shrink: 0;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  height: 48px;
+  gap: 14px;
+}
+.game-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--yellow-dim);
+  border: 1px solid rgba(212,232,0,0.2);
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--yellow);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.game-title-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.live-badge {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted2);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.live-dot {
+  width: 8px; height: 8px;
+  background: var(--red);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(255,59,59,0.6);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.3)} }
+.offer-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--yellow-dim);
+  border: 1px solid rgba(212,232,0,0.25);
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted2);
+}
+.offer-badge strong { color: var(--yellow); font-weight: 800; }
+.offer-tag {
+  background: var(--yellow);
+  color: #111;
+  font-size: 0.62rem;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+
+/* ═══ BODY LAYOUT ═══ */
+.body-wrap {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ═══ GAME AREA (left) ═══ */
+.game-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  overflow: hidden;
+  position: relative;
+}
+
+/* History bar */
+.history-bar {
+  height: 36px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 8px;
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  overflow: hidden;
+}
+.history-chip {
+  padding: 3px 10px;
+  border-radius: 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.history-chip.win { background: rgba(57,211,83,0.12); color: var(--green); border: 1px solid rgba(57,211,83,0.2); }
+.history-chip.loss { background: rgba(255,59,59,0.1); color: var(--red); border: 1px solid rgba(255,59,59,0.15); }
+
+/* Grid canvas area */
+.grid-canvas {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  position: relative;
+  background:
+    linear-gradient(rgba(212,232,0,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212,232,0,0.025) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-color: var(--bg);
+}
+.grid-canvas::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(212,232,0,0.03) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.grid-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  padding: 20px;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.tile {
+  width: 86px;
+  height: 86px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  transition: all 0.14s;
+  background: var(--bg4);
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+  position: relative;
+  overflow: hidden;
+}
+.tile::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 60%);
+  border-radius: 10px;
+  pointer-events: none;
+}
+.tile:hover:not(.disabled):not(.revealed) {
+  background: var(--bg5);
+  border-color: rgba(212,232,0,0.3);
+  box-shadow: 0 0 18px rgba(212,232,0,0.1), inset 0 -3px 0 rgba(0,0,0,0.4);
+  transform: translateY(-2px) scale(1.04);
+}
+.tile:active:not(.disabled):not(.revealed) { transform: scale(0.95); }
+.tile.disabled { cursor: not-allowed; opacity: 0.7; }
+
+.tile.gem {
+  background: rgba(57,211,83,0.1);
+  border-color: rgba(57,211,83,0.3);
+  cursor: default;
+  animation: gemPop 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+.tile.gem .icon { filter: drop-shadow(0 0 14px rgba(57,211,83,0.7)); }
+
+.tile.mine-hit {
+  background: rgba(255,59,59,0.12);
+  border-color: rgba(255,59,59,0.35);
+  cursor: default;
+  animation: minePop 0.35s ease;
+}
+.tile.mine-hit .icon { filter: drop-shadow(0 0 14px rgba(255,80,80,0.7)); }
+
+.tile.mine-reveal {
+  background: var(--bg3);
+  border-color: rgba(255,59,59,0.12);
+  cursor: default;
+  opacity: 0.55;
+}
+
+@keyframes gemPop {
+  0% { transform: scale(0.4) rotate(-10deg); opacity: 0; }
+  60% { transform: scale(1.15) rotate(4deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@keyframes minePop {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Game message overlay */
+.game-msg-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 28px;
+}
+.game-msg {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-align: center;
+}
+.msg-bust { color: var(--red); text-shadow: 0 0 12px rgba(255,59,59,0.5); }
+.msg-cash { color: var(--yellow); text-shadow: 0 0 12px var(--yellow-glow); }
+
+/* Multiplier display during game */
+.multiplier-display {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3.5rem;
+  letter-spacing: 3px;
+  color: var(--yellow);
+  text-shadow: 0 0 30px var(--yellow-glow), 0 0 60px rgba(212,232,0,0.08);
+  line-height: 1;
+  display: none;
+  animation: multPulse 0.5s ease;
+}
+@keyframes multPulse { from{transform:scale(0.9);opacity:0} to{transform:scale(1);opacity:1} }
+.multiplier-sub {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted2);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-top: 2px;
+  display: none;
+}
+
+/* ═══ SIDE PANEL ═══ */
+.side-panel {
+  width: var(--panel-w);
+  flex-shrink: 0;
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Panel tabs */
+.panel-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.panel-tab {
+  flex: 1;
+  padding: 13px 10px;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--muted);
+  font-family: 'Barlow', sans-serif;
+  transition: all 0.15s;
+  border-bottom: 2px solid transparent;
+}
+.panel-tab.active {
+  color: var(--yellow);
+  border-bottom-color: var(--yellow);
+  background: var(--yellow-dim);
+}
+.panel-tab:hover:not(.active) { color: var(--white); }
+
+/* Panel body */
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  scrollbar-width: none;
+}
+.panel-body::-webkit-scrollbar { display: none; }
+
+/* Label */
+.ctrl-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
+  font-weight: 700;
+  margin-bottom: 7px;
+  display: block;
+}
+
+/* Bet input */
+.bet-input-wrap { display: flex; flex-direction: column; }
+.bet-input-row {
+  display: flex;
+  align-items: center;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.bet-input-row:focus-within { border-color: rgba(212,232,0,0.3); }
+.bet-adj {
+  width: 40px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--muted2);
+  border: none;
+  background: none;
+  transition: all 0.15s;
+  font-family: 'Barlow', sans-serif;
+}
+.bet-adj:hover { color: var(--yellow); background: var(--yellow-dim); }
+.bet-adj.left { border-right: 1px solid var(--border); }
+.bet-adj.right { border-left: 1px solid var(--border); }
+.bet-num-input {
+  flex: 1;
+  background: transparent;
+  text-align: center;
+  font-size: 1.1rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: var(--white);
+  border: none;
+  outline: none;
+  padding: 8px 4px;
+  min-width: 0;
+}
+.bet-num-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+/* Preset chips */
+.presets-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+}
+.preset-chip {
+  padding: 7px 4px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--muted2);
+  cursor: pointer;
+  font-family: 'Barlow', sans-serif;
+  transition: all 0.15s;
+  text-align: center;
+}
+.preset-chip:hover { color: var(--white); border-color: var(--muted); }
+.preset-chip.active {
+  background: var(--yellow-dim);
+  border-color: rgba(212,232,0,0.4);
+  color: var(--yellow);
+}
+
+/* Mine count selector */
+.mine-selector {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+}
+.mine-chip {
+  padding: 7px 4px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--muted2);
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.15s;
+  text-align: center;
+}
+.mine-chip:hover { color: var(--white); border-color: var(--muted); }
+.mine-chip.active {
+  background: rgba(255,59,59,0.1);
+  border-color: rgba(255,59,59,0.35);
+  color: var(--red);
+}
+
+/* Stats row */
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.stat-box {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 8px;
+  text-align: center;
+}
+.stat-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.stat-label {
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.wins-val { color: var(--green); }
+.losses-val { color: var(--red); }
+.pnl-val { color: var(--yellow); }
+
+/* Profit / multiplier display */
+.profit-box {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.profit-mult {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  color: var(--muted2);
+  letter-spacing: 1px;
+}
+.profit-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--yellow);
+}
+
+/* Gems info */
+.gems-info-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.info-box {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.info-box .ib-icon { font-size: 1.1rem; }
+.info-box .ib-text { display: flex; flex-direction: column; }
+.info-box .ib-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.info-box .ib-label { font-size: 0.6rem; color: var(--muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+
+/* Auto cashout toggle */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.toggle-info { display: flex; flex-direction: column; }
+.toggle-title { font-size: 0.78rem; font-weight: 700; }
+.toggle-sub { font-size: 0.65rem; color: var(--muted); margin-top: 1px; }
+.toggle-switch {
+  width: 38px; height: 20px;
+  background: var(--bg5);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.toggle-switch.on { background: var(--yellow); }
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 14px; height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  transition: left 0.2s;
+}
+.toggle-switch.on::after { left: 20px; }
+
+/* Random / Pick tile btn */
+.random-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  background: var(--bg3);
+  color: var(--muted2);
+  border: 1px solid var(--border2);
+  cursor: pointer;
+  font-family: 'Barlow', sans-serif;
+  transition: all 0.15s;
+  display: none;
+}
+.random-btn:hover { background: var(--bg5); color: var(--white); border-color: var(--muted); }
+
+/* Main action button */
+.main-btn {
+  width: 100%;
+  padding: 15px;
+  border-radius: 9px;
+  font-size: 0.85rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Barlow', sans-serif;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.btn-place {
+  background: var(--yellow);
+  color: #111;
+  box-shadow: 0 0 24px rgba(212,232,0,0.15);
+}
+.btn-place:hover { background: #e8ff00; box-shadow: 0 0 32px rgba(212,232,0,0.3); }
+.btn-place:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-cashout {
+  background: var(--green);
+  color: #111;
+  box-shadow: 0 0 24px rgba(57,211,83,0.2);
+  animation: cashoutPulse 1.5s ease-in-out infinite;
+}
+.btn-cashout:hover { opacity: 0.9; }
+@keyframes cashoutPulse {
+  0%,100% { box-shadow: 0 0 24px rgba(57,211,83,0.2); }
+  50% { box-shadow: 0 0 40px rgba(57,211,83,0.45); }
+}
+
+/* Round status */
+.round-status-btn {
+  width: 100%;
+  padding: 13px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--muted2);
+  font-family: 'Barlow', sans-serif;
+  cursor: not-allowed;
+  text-align: center;
+}
+.round-status-sub { font-size: 0.62rem; font-weight: 600; color: var(--muted); letter-spacing: 1px; margin-top: 3px; }
+
+/* Panel footer */
+.panel-footer {
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* ═══ BOTTOM BAR ═══ */
+.bottom-bar {
+  height: var(--bottom-h);
+  flex-shrink: 0;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 16px;
+  font-size: 0.72rem;
+}
+.bottom-live-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--muted2);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.bottom-live-dot {
+  width: 7px; height: 7px;
+  background: var(--red);
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(255,59,59,0.5);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+.bottom-count {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--white);
+  font-weight: 700;
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  border-radius: 5px;
+}
+.bottom-right { margin-left: auto; color: var(--muted); font-size: 0.68rem; font-weight: 600; }
+.bottom-cols {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-left: 20px;
+}
+.bottom-col { color: var(--muted); }
+
+/* ═══ GAME ICONS BOTTOM ═══ */
+.game-icons-bar {
+  position: absolute;
+  bottom: 0; right: 0;
+  width: var(--panel-w);
+  height: 52px;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+}
+.game-icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  transition: all 0.15s;
+}
+.game-icon-btn:hover { border-color: rgba(212,232,0,0.3); background: var(--bg4); }
+.game-icon-btn.active { border-color: rgba(212,232,0,0.4); background: var(--yellow-dim); }
+
+/* ═══ TOAST ═══ */
+.toast {
+  position: fixed;
+  top: 80px; right: 24px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  z-index: 999;
+  animation: slideIn 0.3s ease;
+  font-family: 'Barlow', sans-serif;
+  letter-spacing: 0.5px;
+  max-width: 260px;
+}
+.toast.error { background: var(--red); color: #fff; box-shadow: 0 4px 20px rgba(255,59,59,0.3); }
+.toast.success { background: var(--green); color: #111; box-shadow: 0 4px 20px rgba(57,211,83,0.3); }
+@keyframes slideIn { from{transform:translateX(120%);opacity:0} to{transform:translateX(0);opacity:1} }
+
+/* ═══ DIVIDER ═══ */
+.panel-divider { height: 1px; background: var(--border); margin: 0 -16px; }
+
+@media (max-width: 900px) {
+  .body-wrap { flex-direction: column-reverse; }
+  .side-panel { width: 100%; max-height: 380px; border-left: none; border-top: 1px solid var(--border); }
+  .tile { width: 56px; height: 56px; font-size: 1.4rem; }
+  .multiplier-display { font-size: 2.5rem; }
+  .nav-links { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ TOP NAV ═══ -->
+<nav class="topnav">
+  <div class="logo">BET<span>X</span></div>
+  <div class="nav-links">
+    <button class="nav-link" onclick="window.location.href='dashboard.html'">⚡ Live Events <span class="badge-live">23</span></button>
+    <button class="nav-link" onclick="window.location.href='dashboard.html'">📅 Upcoming</button>
+    <button class="nav-link">🎁 Promotions</button>
+    <button class="nav-link">🎰 Live Casino</button>
+    <button class="nav-link active">⚡ Instant Games</button>
+    <button class="nav-link">🎲 Slots</button>
+  </div>
+  <div class="nav-right">
+    <div class="wallet-badge">
+      <span class="w-label">Wallet</span>
+      <span id="walletDisplay">₹1,000.00</span>
+    </div>
+    <button class="deposit-btn">+ Deposit</button>
+  </div>
+</nav>
+
+<!-- ═══ BREADCRUMB ═══ -->
+<div class="subheader">
+  <div class="breadcrumb">
+    <a onclick="window.location.href='dashboard.html'">Home</a>
+    <span class="sep">›</span>
+    <a onclick="window.location.href='dashboard.html'">Instant Games</a>
+    <span class="sep">›</span>
+    <span class="current">Mines</span>
+  </div>
+</div>
+
+<!-- ═══ GAME TITLE BAR ═══ -->
+<div class="game-title-bar">
+  <div class="game-badge">💣 Mines</div>
+  <span class="game-title-name">MinesX</span>
+  <div class="live-badge">
+    <div class="live-dot"></div>
+    LIVE · <span id="livePlayers">247</span> playing
+  </div>
+  <div style="margin-left:14px;">
+    <div class="offer-badge">
+      <span class="offer-tag">⚡ OFFER</span>
+      First bet bonus: <strong>100% up to ₹30,000</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ BODY ═══ -->
+<div class="body-wrap">
+
+  <!-- GAME AREA -->
+  <div class="game-area">
+    <!-- History bar -->
+    <div class="history-bar">
+      <span>Last</span>
+      <div id="historyChips" style="display:flex;gap:6px;"></div>
+    </div>
+
+    <!-- Grid canvas -->
+    <div class="grid-canvas">
+      <div class="grid-inner">
+        <div id="multiplierDisplay" class="multiplier-display"></div>
+        <div id="multiplierSub" class="multiplier-sub">FLYING — CASH OUT?</div>
+        <div class="grid" id="grid"></div>
+        <div class="game-msg-row">
+          <div id="gameMsg" class="game-msg"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDE PANEL -->
+  <aside class="side-panel">
+    <div class="panel-tabs">
+      <button class="panel-tab active" id="tabManual" onclick="switchTab('manual')">Manual</button>
+      <button class="panel-tab" id="tabAuto" onclick="switchTab('auto')">Auto Bet</button>
+    </div>
+
+    <div class="panel-body" id="panelBody">
+
+      <!-- Bet Amount -->
+      <div class="bet-input-wrap">
+        <label class="ctrl-label">Bet Amount (₹)</label>
+        <div class="bet-input-row">
+          <button class="bet-adj left" onclick="adjustBet(-10)">−</button>
+          <input type="number" class="bet-num-input" id="betInput" value="50" min="10" onchange="updateBet()">
+          <button class="bet-adj right" onclick="adjustBet(10)">+</button>
+        </div>
+        <div class="presets-row" id="presets"></div>
+      </div>
+
+      <!-- Mines Count -->
+      <div>
+        <label class="ctrl-label">Mines Count</label>
+        <div class="mine-selector" id="mineSelector"></div>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <!-- Gem / Mine info -->
+      <div class="gems-info-row">
+        <div class="info-box">
+          <span class="ib-icon">💣</span>
+          <div class="ib-text">
+            <span class="ib-val" id="mineCountDisplay">7</span>
+            <span class="ib-label">Mines</span>
+          </div>
+        </div>
+        <div class="info-box">
+          <span class="ib-icon">💎</span>
+          <div class="ib-text">
+            <span class="ib-val" id="gemCountDisplay">18</span>
+            <span class="ib-label">Gems</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-val wins-val" id="winsDisplay">0</div>
+          <div class="stat-label">Wins</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val losses-val" id="lossesDisplay">0</div>
+          <div class="stat-label">Losses</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val pnl-val" id="pnlDisplay">₹0</div>
+          <div class="stat-label">Net P/L</div>
+        </div>
+      </div>
+
+      <!-- Profit display -->
+      <div>
+        <label class="ctrl-label" id="profitLabel">Total Profit (0.00×)</label>
+        <div class="profit-box">
+          <span class="profit-mult" id="profitMult">0.00×</span>
+          <span class="profit-val" id="profitVal">₹0.00</span>
+        </div>
+      </div>
+
+      <!-- Auto cashout toggle -->
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <span class="toggle-title">Auto Cashout</span>
+          <span class="toggle-sub">Auto collect winnings</span>
+        </div>
+        <div class="toggle-switch" id="autoCashoutToggle" onclick="toggleAutoCashout()"></div>
+      </div>
+
+      <!-- Random tile btn -->
+      <button class="random-btn" id="randomBtn" onclick="pickRandom()">🎲 Pick Random Tile</button>
+
+    </div>
+
+    <!-- Panel footer with main button -->
+    <div class="panel-footer">
+      <button class="main-btn btn-place" id="mainBtn" onclick="handleMainBtn()">Place Bet</button>
+      <div id="roundStatus" style="display:none;">
+        <div class="round-status-btn">Round in Progress</div>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<!-- ═══ BOTTOM BAR ═══ -->
+<div class="bottom-bar">
+  <div class="bottom-live-label">
+    <div class="bottom-live-dot"></div>
+    Live Bets
+    <span class="bottom-count" id="liveBetsCount">0</span>
+  </div>
+  <div class="bottom-cols">
+    <span class="bottom-col">Player</span>
+    <span class="bottom-col">Bet</span>
+    <span class="bottom-col">Status</span>
+  </div>
+  <div class="bottom-right">Real-time</div>
+</div>
+
+<script>
+/* ═══════════════════════════
+   GAME STATE
+═══════════════════════════ */
+const GRID_SIZE = 25;
+let minesCount = 7;
+let gemsCount = 18;
+let balance = 1000;
+let betAmount = 50;
+let gamesPlayed = 0;
+let wins = 0, losses = 0, netPnl = 0;
+let autoCashoutOn = false;
+
+let grid = [], minePositions = new Set(), revealedCount = 0, gameState = 'idle';
+let mustLose = false, safePicks = 0, picksDone = 0;
+let history = [];
+
+const presetAmounts = [10, 50, 100, 500];
+const mineOptions = [3, 5, 7, 10, 15];
+
+const $ = id => document.getElementById(id);
+
+/* ═══ INIT ═══ */
+function init() {
+  buildGrid();
+  renderPresets();
+  renderMineSelector();
+  updateUI();
+  animateLivePlayers();
+}
+
+function buildGrid() {
+  const g = $('grid');
+  g.innerHTML = '';
+  for (let i = 0; i < GRID_SIZE; i++) {
+    const t = document.createElement('button');
+    t.className = 'tile disabled';
+    t.dataset.index = i;
+    t.onclick = () => revealTile(i);
+    g.appendChild(t);
+  }
+  grid = Array(GRID_SIZE).fill('hidden');
+}
+
+function renderPresets() {
+  $('presets').innerHTML = presetAmounts.map(a =>
+    `<button class="preset-chip ${a === betAmount ? 'active' : ''}" onclick="setBet(${a})">₹${a}</button>`
+  ).join('');
+}
+
+function renderMineSelector() {
+  $('mineSelector').innerHTML = mineOptions.map(n =>
+    `<button class="mine-chip ${n === minesCount ? 'active' : ''}" onclick="setMines(${n})">${n}</button>`
+  ).join('');
+}
+
+function setMines(n) {
+  if (gameState === 'playing') return;
+  minesCount = n;
+  gemsCount = GRID_SIZE - n;
+  $('mineCountDisplay').textContent = minesCount;
+  $('gemCountDisplay').textContent = gemsCount;
+  renderMineSelector();
+  updateUI();
+}
+
+function setBet(v) {
+  if (gameState === 'playing') return;
+  betAmount = Math.max(10, v);
+  $('betInput').value = betAmount;
+  renderPresets();
+  updateUI();
+}
+function adjustBet(d) { setBet(betAmount + d); }
+function updateBet() { setBet(Math.max(10, +$('betInput').value)); }
+
+/* ═══ MULTIPLIER CALC ═══ */
+function calcMultiplier(revealed) {
+  if (revealed === 0) return 0;
+  const base = (GRID_SIZE / (GRID_SIZE - minesCount));
+  return Math.floor(Math.pow(base, revealed) * 100) / 100;
+}
+
+/* ═══ HOUSE EDGE ═══ */
+function shouldLose() {
+  let c = balance > 500 ? 0.97 : balance > 200 ? 0.94 : balance > 100 ? 0.88 : 0.72;
+  c = Math.min(0.99, c + gamesPlayed * 0.004);
+  return Math.random() < c;
+}
+
+function genMines() {
+  const s = new Set();
+  while (s.size < minesCount) s.add(Math.floor(Math.random() * GRID_SIZE));
+  return s;
+}
+
+/* ═══ MAIN BUTTON ═══ */
+function handleMainBtn() {
+  if (gameState === 'playing') { cashout(); return; }
+  if (betAmount > balance) { showToast('Insufficient balance!', 'error'); return; }
+
+  minePositions = genMines();
+  grid = Array(GRID_SIZE).fill('hidden');
+  revealedCount = 0;
+  balance -= betAmount;
+  gameState = 'playing';
+  gamesPlayed++;
+  mustLose = shouldLose();
+  safePicks = mustLose ? Math.floor(Math.random() * 4) + 1 : 999;
+  picksDone = 0;
+
+  $('gameMsg').textContent = '';
+  $('multiplierDisplay').style.display = 'none';
+  $('multiplierSub').style.display = 'none';
+  renderGrid();
+  updateUI();
+}
+
+/* ═══ REVEAL TILE ═══ */
+function revealTile(i) {
+  if (gameState !== 'playing' || grid[i] !== 'hidden') return;
+  picksDone++;
+  const forceHit = mustLose && picksDone > safePicks;
+  const isActual = minePositions.has(i);
+
+  if (isActual || forceHit) {
+    grid[i] = 'mine';
+    if (!isActual) minePositions.add(i);
+    gameState = 'busted';
+    losses++;
+    netPnl -= betAmount;
+    addHistory('loss');
+    showToast(`💥 Boom! Lost ₹${betAmount.toFixed(2)}`, 'error');
+    $('gameMsg').innerHTML = '<span class="msg-bust">💥 You hit a mine! Better luck next time.</span>';
+    revealAllTiles();
+  } else {
+    grid[i] = 'gem';
+    revealedCount++;
+
+    const m = calcMultiplier(revealedCount);
+    $('multiplierDisplay').textContent = m.toFixed(2) + '×';
+    $('multiplierDisplay').style.display = 'block';
+    $('multiplierSub').style.display = 'block';
+
+    if (revealedCount >= gemsCount) {
+      const w = betAmount * m;
+      balance += w;
+      wins++;
+      netPnl += (w - betAmount);
+      gameState = 'cashed_out';
+      addHistory('win', m);
+      showToast(`🎉 All gems! Won ₹${w.toFixed(2)}`, 'success');
+      $('gameMsg').innerHTML = `<span class="msg-cash">✅ Cashed out at ${m.toFixed(2)}× — ₹${w.toFixed(2)}</span>`;
+      revealAllTiles();
+    } else if (autoCashoutOn) {
+      // simple auto cashout after 2 gems revealed
+      if (revealedCount >= 2) { cashout(); return; }
+    }
+  }
+  renderGrid();
+  updateUI();
+}
+
+/* ═══ CASHOUT ═══ */
+function cashout() {
+  const m = calcMultiplier(revealedCount);
+  const w = betAmount * m;
+  balance += w;
+  wins++;
+  netPnl += (w - betAmount);
+  gameState = 'cashed_out';
+  addHistory('win', m);
+  showToast(`✅ Cashed out ₹${w.toFixed(2)} at ${m.toFixed(2)}×!`, 'success');
+  $('gameMsg').innerHTML = `<span class="msg-cash">✅ Cashed out at ${m.toFixed(2)}× — ₹${w.toFixed(2)}</span>`;
+  revealAllTiles();
+  renderGrid();
+  updateUI();
+}
+
+function pickRandom() {
+  const hidden = grid.reduce((a, s, i) => { if (s === 'hidden') a.push(i); return a; }, []);
+  if (hidden.length) revealTile(hidden[Math.floor(Math.random() * hidden.length)]);
+}
+
+function revealAllTiles() {
+  for (let i = 0; i < GRID_SIZE; i++) {
+    if (grid[i] === 'hidden' && minePositions.has(i)) grid[i] = 'mine-reveal';
+  }
+}
+
+/* ═══ RENDER GRID ═══ */
+function renderGrid() {
+  const tiles = $('grid').children;
+  for (let i = 0; i < GRID_SIZE; i++) {
+    const t = tiles[i];
+    t.className = 'tile' + (gameState !== 'playing' ? ' disabled' : '');
+    t.innerHTML = '';
+    if (grid[i] === 'gem') {
+      t.className = 'tile gem revealed';
+      t.innerHTML = '<span class="icon">💎</span>';
+    } else if (grid[i] === 'mine') {
+      t.className = 'tile mine-hit revealed';
+      t.innerHTML = '<span class="icon">💣</span>';
+    } else if (grid[i] === 'mine-reveal') {
+      t.className = 'tile mine-reveal revealed';
+      t.innerHTML = '<span class="icon">💣</span>';
+    }
+  }
+}
+
+/* ═══ UPDATE UI ═══ */
+function updateUI() {
+  const m = calcMultiplier(revealedCount);
+  const profit = betAmount * m - betAmount;
+
+  $('walletDisplay').textContent = '₹' + balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  $('profitLabel').textContent = `Total Profit (${m.toFixed(2)}×)`;
+  $('profitMult').textContent = m.toFixed(2) + '×';
+  $('profitVal').textContent = '₹' + profit.toFixed(2);
+  $('betInput').value = betAmount;
+
+  $('winsDisplay').textContent = wins;
+  $('lossesDisplay').textContent = losses;
+  const pnlSign = netPnl >= 0 ? '+' : '';
+  $('pnlDisplay').textContent = pnlSign + '₹' + Math.abs(netPnl).toFixed(0);
+  $('pnlDisplay').style.color = netPnl >= 0 ? 'var(--green)' : 'var(--red)';
+  $('liveBetsCount').textContent = gamesPlayed;
+
+  const btn = $('mainBtn');
+  const randBtn = $('randomBtn');
+
+  if (gameState === 'playing') {
+    btn.textContent = `💰 Cashout ₹${(betAmount * m).toFixed(2)}`;
+    btn.className = 'main-btn btn-cashout';
+    btn.disabled = false;
+    randBtn.style.display = 'block';
+    $('multiplierDisplay').style.display = 'block';
+    $('multiplierSub').style.display = 'block';
+  } else {
+    btn.textContent = 'Place Bet';
+    btn.className = 'main-btn btn-place';
+    btn.disabled = betAmount < 10 || betAmount > balance;
+    randBtn.style.display = 'none';
+    if (gameState === 'idle') {
+      $('multiplierDisplay').style.display = 'none';
+      $('multiplierSub').style.display = 'none';
+    }
+  }
+}
+
+/* ═══ HISTORY ═══ */
+function addHistory(type, mult) {
+  history.unshift({ type, mult: mult || 0 });
+  if (history.length > 10) history.pop();
+  renderHistory();
+}
+function renderHistory() {
+  $('historyChips').innerHTML = history.map(h =>
+    h.type === 'win'
+      ? `<div class="history-chip win">${h.mult.toFixed(2)}×</div>`
+      : `<div class="history-chip loss">💥</div>`
+  ).join('');
+}
+
+/* ═══ TOAST ═══ */
+function showToast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+/* ═══ TAB SWITCH ═══ */
+function switchTab(tab) {
+  $('tabManual').classList.toggle('active', tab === 'manual');
+  $('tabAuto').classList.toggle('active', tab === 'auto');
+}
+
+/* ═══ AUTO CASHOUT TOGGLE ═══ */
+function toggleAutoCashout() {
+  autoCashoutOn = !autoCashoutOn;
+  $('autoCashoutToggle').classList.toggle('on', autoCashoutOn);
+}
+
+/* ═══ ANIMATE LIVE PLAYERS ═══ */
+function animateLivePlayers() {
+  let n = 247;
+  setInterval(() => {
+    n = Math.max(100, n + Math.floor(Math.random() * 7) - 3);
+    $('livePlayers').textContent = n;
+  }, 3000);
+}
+
+/* ═══ LOAD BALANCE FROM LOCALSTORAGE ═══ */ 
+(function loadBalance() {
+  const session = sessionStorage.getItem('betx_session');
+  if (session) {
+    try {
+      const { phone } = JSON.parse(session);
+      const users = JSON.parse(localStorage.getItem('betx_users') || '[]');
+      const user = users.find(u => String(u.phone) === String(phone));
+      if (user) balance = parseFloat(user.balance) || 1000;
+    } catch(e) {}
+  }
+})();
+
+
+   
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BetX — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg: #0f0f0f;
+  --bg2: #161616;
+  --bg3: #1e1e1e;
+  --bg4: #252525;
+  --yellow: #d4e800;
+  --yellow-dim: #a0b000;
+  --yellow-bg: rgba(212,232,0,0.08);
+  --red: #ff3b3b;
+  --green: #1db954;
+  --white: #f0f0f0;
+  --muted: #888;
+  --border: rgba(255,255,255,0.07);
+  --sidebar-w: 220px;
+  --betslip-w: 280px;
+  --top-h: 54px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--white);height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+
+/* ── TOP NAV ── */
+.topnav{height:var(--top-h);flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:0;z-index:100;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--yellow);text-shadow:0 0 18px rgba(212,232,0,0.35);margin-right:28px;white-space:nowrap;}
+.logo span{color:#fff;}
+.nav-links{display:flex;gap:2px;flex:1;}
+.nav-link{padding:8px 14px;font-size:0.8rem;font-weight:600;color:var(--muted);border-radius:6px;cursor:pointer;white-space:nowrap;transition:all 0.18s;display:flex;align-items:center;gap:6px;letter-spacing:0.3px;}
+.nav-link:hover{color:var(--white);background:var(--bg3);}
+.nav-link.active{color:var(--yellow);}
+.nav-link .nav-icon{font-size:1rem;}
+.nav-right{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.nav-search{width:30px;height:30px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.9rem;color:var(--muted);transition:all 0.18s;}
+.nav-search:hover{color:var(--white);}
+.lang-badge{display:flex;align-items:center;gap:5px;font-size:0.78rem;font-weight:600;color:var(--muted);cursor:pointer;padding:5px 8px;border-radius:6px;border:1px solid var(--border);}
+.btn-login{padding:7px 18px;background:transparent;border:1px solid rgba(255,255,255,0.2);color:var(--white);font-family:'Barlow',sans-serif;font-size:0.82rem;font-weight:700;border-radius:6px;cursor:pointer;transition:all 0.18s;letter-spacing:0.5px;}
+.btn-login:hover{border-color:var(--yellow);color:var(--yellow);}
+.btn-signup{padding:7px 18px;background:var(--yellow);border:none;color:#111;font-family:'Barlow',sans-serif;font-size:0.82rem;font-weight:800;border-radius:6px;cursor:pointer;transition:all 0.18s;letter-spacing:0.5px;}
+.btn-signup:hover{background:#e8ff00;box-shadow:0 0 14px rgba(212,232,0,0.4);}
+
+/* ── BODY LAYOUT ── */
+.body-wrap{display:flex;flex:1;overflow:hidden;}
+
+/* ── LEFT SIDEBAR ── */
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;overflow-x:hidden;scrollbar-width:none;}
+.sidebar::-webkit-scrollbar{display:none;}
+.sidebar-section{padding:10px 0;}
+.sidebar-label{font-size:0.65rem;font-weight:700;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:6px 16px 4px;}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:9px 16px;font-size:0.84rem;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.15s;border-left:2px solid transparent;}
+.sidebar-item:hover{color:var(--white);background:var(--bg3);}
+.sidebar-item.active{color:var(--yellow);border-left-color:var(--yellow);background:var(--yellow-bg);}
+.sidebar-item .s-icon{font-size:1rem;width:20px;text-align:center;}
+.sidebar-item .s-badge{margin-left:auto;background:var(--red);color:#fff;font-size:0.6rem;font-weight:800;padding:2px 6px;border-radius:10px;}
+.sidebar-item .s-arrow{margin-left:auto;color:var(--muted);font-size:0.7rem;}
+.sidebar-divider{height:1px;background:var(--border);margin:6px 0;}
+.sidebar-league{padding:8px 16px;font-size:0.82rem;font-weight:500;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:all 0.15s;}
+.sidebar-league:hover{color:var(--white);}
+.league-name{font-size:0.7rem;font-weight:700;color:var(--yellow);letter-spacing:1px;text-transform:uppercase;}
+
+/* ── MAIN CONTENT ── */
+.main{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px;scrollbar-width:thin;scrollbar-color:var(--bg4) transparent;}
+.main::-webkit-scrollbar{width:4px;}
+.main::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px;}
+
+/* HERO BANNER */
+.hero-banner{position:relative;border-radius:12px;overflow:hidden;height:200px;background:linear-gradient(110deg,#1a1a0a 0%,#0f1a00 40%,#1a2800 100%);margin-bottom:18px;display:flex;align-items:flex-end;padding:24px 28px;}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 80% at 80% 50%,rgba(212,232,0,0.12) 0%,transparent 60%),radial-gradient(ellipse 40% 60% at 90% 30%,rgba(255,180,0,0.08) 0%,transparent 50%);}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(212,232,0,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(212,232,0,0.04) 1px,transparent 1px);background-size:28px 28px;}
+.hero-plane{position:absolute;right:40px;top:50%;transform:translateY(-50%);font-size:7rem;opacity:0.18;animation:planeFly 6s ease-in-out infinite;}
+@keyframes planeFly{0%,100%{transform:translateY(-50%) rotate(-5deg);}50%{transform:translateY(-60%) rotate(3deg);}}
+.hero-coins{position:absolute;right:20px;top:10px;font-size:2rem;opacity:0.5;animation:coinSpin 3s linear infinite;}
+@keyframes coinSpin{0%{transform:rotateY(0)}100%{transform:rotateY(360deg)}}
+.hero-content{position:relative;z-index:1;}
+.hero-tag2{display:inline-block;background:var(--yellow);color:#111;font-size:0.65rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:8px;}
+.hero-title{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:800;letter-spacing:1px;line-height:1.1;text-transform:uppercase;margin-bottom:4px;}
+.hero-sub2{font-size:0.85rem;color:rgba(255,255,255,0.6);margin-bottom:14px;}
+.hero-cta2{padding:8px 22px;background:var(--yellow);color:#111;font-family:'Barlow',sans-serif;font-size:0.82rem;font-weight:800;border:none;border-radius:6px;cursor:pointer;letter-spacing:0.8px;text-transform:uppercase;transition:all 0.18s;}
+.hero-cta2:hover{background:#e8ff00;box-shadow:0 0 18px rgba(212,232,0,0.4);}
+
+/* CATEGORY ICONS */
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:0.5px;display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.more-link{margin-left:auto;font-size:0.78rem;font-weight:600;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:4px;}
+.more-link:hover{color:var(--yellow);}
+.category-row{display:flex;gap:8px;overflow-x:auto;margin-bottom:20px;padding-bottom:4px;scrollbar-width:none;}
+.category-row::-webkit-scrollbar{display:none;}
+.cat-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;transition:all 0.18s;}
+.cat-icon{width:54px;height:54px;background:var(--bg3);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:all 0.18s;position:relative;}
+.cat-item:hover .cat-icon{background:var(--bg4);border-color:var(--yellow);box-shadow:0 0 12px rgba(212,232,0,0.2);}
+.cat-item.active .cat-icon{background:var(--yellow-bg);border-color:var(--yellow);}
+.cat-label{font-size:0.68rem;font-weight:600;color:var(--muted);text-align:center;white-space:nowrap;}
+.cat-item:hover .cat-label,.cat-item.active .cat-label{color:var(--yellow);}
+.live-dot{position:absolute;top:2px;right:2px;width:14px;height:14px;background:var(--red);border-radius:50%;border:2px solid var(--bg2);display:flex;align-items:center;justify-content:center;font-size:0.45rem;font-weight:800;color:#fff;}
+
+/* HOT MATCHES */
+.matches-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+.match-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:all 0.18s;}
+.match-card:hover{border-color:rgba(212,232,0,0.25);transform:translateY(-1px);}
+.match-header{padding:8px 12px;font-size:0.68rem;color:var(--muted);display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);}
+.innings-badge{background:rgba(255,59,59,0.15);color:var(--red);font-size:0.6rem;font-weight:800;padding:1px 6px;border-radius:3px;letter-spacing:0.5px;}
+.upcoming-badge{background:rgba(255,255,255,0.06);color:var(--muted);font-size:0.6rem;font-weight:800;padding:1px 6px;border-radius:3px;letter-spacing:0.5px;}
+.live-icon{width:16px;height:16px;background:var(--red);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:0.5rem;font-weight:800;color:#fff;}
+.match-teams{padding:10px 12px;}
+.team-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.team-flag{font-size:1rem;}
+.team-name{font-size:0.82rem;font-weight:600;flex:1;}
+.team-score{display:flex;align-items:center;gap:6px;font-size:0.78rem;font-weight:600;}
+.score-num{color:var(--white);}
+.score-runs{color:var(--yellow);font-weight:700;}
+.match-odds{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:8px 12px;border-top:1px solid var(--border);}
+.odd-btn{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:7px 6px;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:all 0.15s;}
+.odd-btn:hover{background:var(--yellow-bg);border-color:var(--yellow);}
+.odd-val{font-size:0.88rem;font-weight:700;color:var(--yellow);}
+.odd-label{font-size:0.6rem;color:var(--muted);margin-top:1px;}
+.odd-btn.locked .odd-val{color:var(--muted);}
+
+/* SPINNER */
+.spinner-dash{width:28px;height:28px;border:3px solid rgba(212,232,0,0.15);border-top-color:var(--yellow);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* INSTANT GAMES */
+.games-row{display:flex;gap:10px;overflow-x:auto;margin-bottom:16px;scrollbar-width:none;padding-bottom:4px;}
+.games-row::-webkit-scrollbar{display:none;}
+.game-card{flex-shrink:0;width:110px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:all 0.18s;text-align:center;}
+.game-card:hover{border-color:rgba(212,232,0,0.25);transform:translateY(-2px);}
+.game-thumb{height:70px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;background:linear-gradient(135deg,var(--bg3),var(--bg4));}
+.game-name{font-size:0.72rem;font-weight:700;padding:7px 6px;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ── BETSLIP ── */
+.betslip{width:var(--betslip-w);flex-shrink:0;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.betslip-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.betslip-title{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:0.5px;}
+.betslip-tabs{display:flex;gap:4px;padding:10px 12px;border-bottom:1px solid var(--border);}
+.bs-tab{flex:1;padding:7px;background:var(--bg3);border:none;color:var(--muted);font-family:'Barlow',sans-serif;font-size:0.78rem;font-weight:700;border-radius:6px;cursor:pointer;transition:all 0.18s;letter-spacing:0.5px;}
+.bs-tab.active{background:var(--yellow);color:#111;}
+.betslip-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);padding:24px;text-align:center;}
+.betslip-empty .empty-icon{font-size:2.5rem;opacity:0.35;}
+.betslip-empty .empty-title{font-weight:700;font-size:0.9rem;color:var(--white);}
+.betslip-empty .empty-sub{font-size:0.78rem;line-height:1.5;}
+.betslip-items{flex:1;overflow-y:auto;padding:10px 12px;scrollbar-width:none;}
+.betslip-items::-webkit-scrollbar{display:none;}
+.bs-item{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;position:relative;}
+.bs-item-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.bs-item-match{font-size:0.7rem;color:var(--muted);}
+.bs-item-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;line-height:1;padding:0;transition:color 0.15s;}
+.bs-item-close:hover{color:var(--red);}
+.bs-item-pick{font-size:0.85rem;font-weight:700;margin-bottom:2px;}
+.bs-item-odd{font-size:0.88rem;color:var(--yellow);font-weight:700;}
+.bs-stake{margin-top:8px;display:flex;align-items:center;gap:6px;}
+.stake-label{font-size:0.68rem;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+.stake-input{flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--white);font-family:'Barlow',sans-serif;font-size:0.88rem;font-weight:600;padding:6px 10px;border-radius:6px;outline:none;transition:border-color 0.18s;}
+.stake-input:focus{border-color:var(--yellow);}
+.betslip-footer{padding:12px 14px;border-top:1px solid var(--border);}
+.bs-total{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:0.82rem;}
+.bs-total-label{color:var(--muted);}
+.bs-total-val{font-weight:700;color:var(--yellow);}
+.place-btn{width:100%;padding:11px;background:var(--yellow);color:#111;font-family:'Barlow',sans-serif;font-size:0.88rem;font-weight:800;border:none;border-radius:8px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all 0.18s;}
+.place-btn:hover{background:#e8ff00;box-shadow:0 0 18px rgba(212,232,0,0.35);}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="logo">BET<span>X</span></div>
+  <div class="nav-links">
+    <div class="nav-link active"><span class="nav-icon">📡</span>Live Events<span class="s-badge">23</span></div>
+    <div class="nav-link"><span class="nav-icon">📅</span>Upcoming</div>
+    <div class="nav-link"><span class="nav-icon">🎁</span>Promotions</div>
+    <div class="nav-link"><span class="nav-icon">🎰</span>Live Casino</div>
+    <div class="nav-link"><span class="nav-icon">⚡</span>Instant Games</div>
+    <div class="nav-link"><span class="nav-icon">🎲</span>Slots</div>
+    <div class="nav-link" onclick="window.location.href='wallet.html'"><span class="nav-icon">💰</span> Wallet</div>
+    <div class="nav-link">••• More</div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-search">🔍</div>
+    <div class="lang-badge">🇮🇳 EN</div>
+    <div style="padding:6px 12px;background:rgba(212,232,0,0.1);border:1px solid rgba(212,232,0,0.3);border-radius:6px;font-size:0.85rem;font-weight:700;color:var(--yellow);">
+      <span id="navBalance">₹0</span>
+    </div>
+    <div id="navAuthBtns" style="display:flex;gap:10px;align-items:center;">
+      <button class="btn-login" onclick="window.location.href='homescreen.html'">Log In</button>
+      <button class="btn-signup" onclick="window.location.href='homescreen.html'">Sign Up</button>
+    </div>
+    <div id="navUserInfo" style="display:none;align-items:center;gap:10px;">
+      <div style="width:32px;height:32px;background:var(--yellow);color:#111;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;" id="navUserAvatar">?</div>
+      <span style="font-size:0.88rem;font-weight:600;" id="navUserName"></span>
+      <button onclick="logoutUser()" style="padding:6px 14px;background:transparent;border:1px solid rgba(255,59,59,0.3);color:#ff3b3b;font-family:'Barlow',sans-serif;font-size:0.78rem;font-weight:700;border-radius:6px;cursor:pointer;transition:all 0.18s;" onmouseover="this.style.background='rgba(255,59,59,0.1)'" onmouseout="this.style.background='transparent'">Logout</button>
+    </div>
+  </div>
+</nav>
+
+<div class="body-wrap">
+
+<!-- LEFT SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-item active"><span class="s-icon">📡</span>All Live<span class="s-badge">23</span></div>
+    <div class="sidebar-item"><span class="s-icon">⭐</span>Favourites</div>
+    <div class="sidebar-item"><span class="s-icon">🔗</span>Top Parlays</div>
+    <div class="sidebar-item"><span class="s-icon">🎁</span>Promotions</div>
+  </div>
+  <div class="sidebar-item" onclick="window.location.href='wallet.html'"><span class="s-icon">💰</span> Wallet</div>
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Sports</div>
+    <div class="sidebar-item"><span class="s-icon">🏏</span>Cricket<span class="s-badge">8</span></div>
+    <div class="sidebar-item"><span class="s-icon">⚽</span>Football<span class="s-badge">12</span></div>
+    <div class="sidebar-item"><span class="s-icon">🏀</span>Basketball</div>
+    <div class="sidebar-item"><span class="s-icon">🎾</span>Tennis</div>
+    <div class="sidebar-item"><span class="s-icon">🏓</span>Table Tennis</div>
+    <div class="sidebar-item"><span class="s-icon">🐎</span>Horse Racing</div>
+    <div class="sidebar-item"><span class="s-icon">🎱</span>Kabaddi</div>
+    <div class="sidebar-item"><span class="s-icon">🏸</span>Badminton</div>
+    <div class="sidebar-item"><span class="s-icon">🥊</span>Boxing</div>
+    <div class="sidebar-item"><span class="s-icon">🎮</span>E-Sports</div>
+  </div>
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">🔥 Popular</div>
+    <div class="sidebar-league"><div><div class="league-name">India</div>IPL 2025</div><span class="s-arrow">›</span></div>
+    <div class="sidebar-league"><div><div class="league-name">India</div>IPL – Long Term</div><span class="s-arrow">›</span></div>
+    <div class="sidebar-league"><div><div class="league-name">World</div>ICC World Cup T20</div><span class="s-arrow">›</span></div>
+    <div class="sidebar-league"><div><div class="league-name">England</div>Premier League</div><span class="s-arrow">›</span></div>
+    <div class="sidebar-league"><div><div class="league-name">Europe</div>Champions League</div><span class="s-arrow">›</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="hero-banner">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-plane">✈️</div>
+    <div class="hero-coins">🪙</div>
+    <div class="hero-content">
+      <div class="hero-tag2">⚡ Welcome Offer</div>
+      <div class="hero-title">INSTANT WELCOME BONUS</div>
+      <div class="hero-sub2">Get 100% bonus up to ₹30,000 on your first deposit</div>
+      <button class="hero-cta2">Claim Bonus →</button>
+    </div>
+  </div>
+
+  <!-- CATEGORIES -->
+  <div class="category-row">
+    <div class="cat-item"><div class="cat-icon">🎁</div><div class="cat-label">Promo</div></div>
+    <div class="cat-item"><div class="cat-icon">₿</div><div class="cat-label">Crypto</div></div>
+    <div class="cat-item active"><div class="cat-icon">📡<span class="live-dot">L</span></div><div class="cat-label">All Live</div></div>
+    <div class="cat-item"><div class="cat-icon">🏏</div><div class="cat-label">IPL</div></div>
+    <div class="cat-item"><div class="cat-icon">⚽</div><div class="cat-label">EPL</div></div>
+    <div class="cat-item"><div class="cat-icon">🏀</div><div class="cat-label">NBA</div></div>
+    <div class="cat-item"><div class="cat-icon">🤖</div><div class="cat-label">Virtual Cricket</div></div>
+    <div class="cat-item"><div class="cat-icon">🐎</div><div class="cat-label">Horse Racing</div></div>
+    <div class="cat-item"><div class="cat-icon">🎡</div><div class="cat-label">Cricket Roulette</div></div>
+    <div class="cat-item"><div class="cat-icon">🏆</div><div class="cat-label">Setka Cup</div></div>
+    <div class="cat-item"><div class="cat-icon">🎮</div><div class="cat-label">E-Football</div></div>
+    <div class="cat-item"><div class="cat-icon">🎾</div><div class="cat-label">Tennis</div></div>
+  </div>
+
+  <!-- ── LIVE MATCHES (API-powered) ── -->
+  <div class="section-title">
+    🏏 Live Cricket Matches
+    <span id="matchesLastUpdated" style="font-size:0.7rem;color:var(--muted);font-weight:400;margin-left:4px;"></span>
+    <span class="more-link" onclick="loadLiveMatches()" style="cursor:pointer;">🔄 Refresh</span>
+  </div>
+  <div class="matches-grid" id="matchesGrid">
+    <div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--muted);">
+      <div class="spinner-dash"></div>
+      <p style="margin-top:12px;font-size:0.85rem;">Loading matches...</p>
+    </div>
+  </div>
+
+  <!-- INSTANT GAMES -->
+  <div class="section-title">⚡ Instant Games<span class="more-link">See all ›</span></div>
+  <div class="games-row">
+   
+    <a href="../Fantacygames/aviator.html" class="game-link"><div class="game-card"><div class="game-thumb">🚀</div><div class="game-name">Aviator</div></div></a>
+    <a href="../Fantacygames/mines.html" class="game-link"><div class="game-card"><div class="game-thumb">💣</div><div class="game-name">Mines</div></div></a>
+    <div class="game-card"><div class="game-thumb">🛸</div><div class="game-name">Jetx</div></div>
+    
+    <div class="game-card"><div class="game-thumb">🏴‍☠️</div><div class="game-name">Road Pirates</div></div>
+    <div class="game-card"><div class="game-thumb">🌀</div><div class="game-name">Vortex</div></div>
+    <div class="game-card"><div class="game-thumb">🏹</div><div class="game-name">Forrest Arrow</div></div>
+    <div class="game-card"><div class="game-thumb">⚡</div><div class="game-name">Lightning Roulette</div></div>
+    <div class="game-card"><div class="game-thumb">🎰</div><div class="game-name">Plinko x5000</div></div>
+    <div class="game-card"><div class="game-thumb">🎲</div><div class="game-name">BetX Slots</div></div>
+    <div class="game-card"><div class="game-thumb">🃏</div><div class="game-name">Teen Patti</div></div>
+  </div>
+
+</main>
+
+<!-- BETSLIP -->
+<aside class="betslip" id="betslip">
+  <div class="betslip-header">
+    🎫 <span class="betslip-title">Betslip</span>
+    <span style="margin-left:auto;font-size:0.7rem;color:var(--muted)" id="betCount">0 bets</span>
+    <button onclick="document.getElementById('betslip').style.display='none'" style="margin-left:10px;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;line-height:1;padding:2px 4px;border-radius:4px;transition:color 0.15s;" onmouseover="this.style.color='#ff3b3b'" onmouseout="this.style.color='var(--muted)'">✕</button>
+  </div>
+  <div class="betslip-tabs">
+    <button class="bs-tab active">Single</button>
+    <button class="bs-tab">Multi</button>
+    <button class="bs-tab">System</button>
+  </div>
+  <div id="betItems" class="betslip-items" style="display:none;"></div>
+  <div class="betslip-empty" id="betEmpty">
+    <div class="empty-icon">🎫</div>
+    <div class="empty-title">Your betslip is empty</div>
+    <div class="empty-sub">Click on any odds to add a bet to the betslip</div>
+  </div>
+  <div class="betslip-footer" id="betFooter" style="display:none;">
+    <div class="bs-total"><span class="bs-total-label">Total Stake</span><span class="bs-total-val" id="totalStake">₹0</span></div>
+    <div class="bs-total"><span class="bs-total-label">Potential Win</span><span class="bs-total-val" id="potentialWin" style="color:#1db954">₹0</span></div>
+    <button class="place-btn">Place Bet</button>
+  </div>
+</aside>
+
+</div><!-- body-wrap -->
+
+<script>
+let bets = [];
+
+// ── Balance helpers ──
+function getBalanceFromStorage(phone) {
+  const users = JSON.parse(localStorage.getItem('betx_users') || '[]');
+  const user = users.find(u => String(u.phone) === String(phone));
+  return user ? parseFloat(user.balance) || 0 : 0;
+}
+function refreshNavBalance() {
+  const session = sessionStorage.getItem('betx_session');
+  if (!session) return;
+  const { phone } = JSON.parse(session);
+  const bal = getBalanceFromStorage(phone);
+  document.getElementById('navBalance').textContent = '₹' + bal.toLocaleString('en-IN');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const session = sessionStorage.getItem('betx_session');
+  if (session) {
+    const { name, phone } = JSON.parse(session);
+    document.getElementById('navUserName').textContent = name.split(' ')[0];
+    document.getElementById('navUserAvatar').textContent = name[0].toUpperCase();
+    refreshNavBalance();
+    document.getElementById('navAuthBtns').style.display = 'none';
+    document.getElementById('navUserInfo').style.display = 'flex';
+  } else {
+    document.getElementById('navAuthBtns').style.display = 'flex';
+    document.getElementById('navUserInfo').style.display = 'none';
+  }
+  loadLiveMatches();
+});
+
+window.addEventListener('storage', refreshNavBalance);
+window.addEventListener('focus', refreshNavBalance);
+
+function logoutUser() {
+  sessionStorage.removeItem('betx_session');
+  window.location.href = 'homescreen.html';
+}
+
+// ════════════════════════════════════
+//  LIVE MATCHES LOADER
+// ════════════════════════════════════
+function getFlag(name) {
+  const flags = {
+    'India':'🇮🇳','Pakistan':'🇵🇰','Australia':'🇦🇺','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+    'South Africa':'🇿🇦','New Zealand':'🇳🇿','West Indies':'🏝️','Sri Lanka':'🇱🇰',
+    'Bangladesh':'🇧🇩','Afghanistan':'🇦🇫','Zimbabwe':'🇿🇼','Ireland':'🇮🇪',
+    'CSK':'🦁','MI':'💙','RCB':'🔴','KKR':'💜','SRH':'🟠','DC':'💙',
+    'PBKS':'🔴','RR':'🩷','LSG':'🟦','GT':'💙',
+  };
+  for (const [key, val] of Object.entries(flags)) {
+    if (name.includes(key)) return val;
+  }
+  return '🏏';
+}
+
+function goToMatch(id, encodedName, encodedLeague) {
+  window.location.href = `match.html?id=${id}&name=${encodedName}&league=${encodedLeague}`;
+}
+
+async function loadLiveMatches() {
+  const grid = document.getElementById('matchesGrid');
+  grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--muted);">
+    <div class="spinner-dash"></div>
+    <p style="margin-top:12px;font-size:0.85rem;">Loading matches...</p>
+  </div>`;
+
+  const cfg = JSON.parse(localStorage.getItem('betx_api_settings') || '{}');
+  const cricKey = cfg.cricApiKey;
+  const oddsKey = cfg.oddsApiKey;
+  let matches = [];
+
+  // ── Fetch live cricket matches ──
+  if (cricKey && cfg.cricEnabled !== false) {
+    try {
+      const endpoint = cfg.cricEndpoint || 'currentMatches';
+      const resp = await fetch(`https://api.cricapi.com/v1/${endpoint}?apikey=${cricKey}&offset=0`);
+      const data = await resp.json();
+      if (data.status === 'success' && data.data) {
+        let list = data.data;
+        if (cfg.cricFilter === 'ipl') list = list.filter(m => m.type === 't20' || (m.name||'').toLowerCase().includes('ipl'));
+        else if (cfg.cricFilter === 'odi') list = list.filter(m => m.matchType === 'odi');
+        else if (cfg.cricFilter === 't20i') list = list.filter(m => m.matchType === 't20i');
+
+        matches = list.slice(0, 9).map(m => ({
+          id: m.id,
+          name: m.name || `${m.teams?.[0]} vs ${m.teams?.[1]}`,
+          team1: m.teams?.[0] || 'Team 1',
+          team2: m.teams?.[1] || 'Team 2',
+          score1: m.score?.[0] ? `${m.score[0].r}/${m.score[0].w}` : '—',
+          score2: m.score?.[1] ? `${m.score[1].r}/${m.score[1].w}` : '—',
+          overs1: m.score?.[0]?.o ? `(${m.score[0].o} ov)` : '',
+          overs2: m.score?.[1]?.o ? `(${m.score[1].o} ov)` : '',
+          status: m.status || '',
+          isLive: m.matchStarted && !m.matchEnded,
+          league: m.name ? m.name.split(',').slice(-1)[0].trim() : 'Cricket',
+        }));
+      }
+    } catch(e) { console.warn('CricAPI error:', e); }
+  }
+
+  // ── Fetch odds ──
+  let oddsMap = {};
+  if (oddsKey && cfg.oddsEnabled !== false) {
+    try {
+      const sport = cfg.oddsSport || 'cricket_ipl';
+      const region = cfg.oddsRegion || 'in';
+      const resp = await fetch(`https://api.the-odds-api.com/v4/sports/${sport}/odds/?apikey=${oddsKey}&regions=${region}&markets=h2h&oddsFormat=decimal`);
+      if (resp.ok) {
+        const data = await resp.json();
+        data.forEach(event => {
+          const best = {};
+          event.bookmakers?.forEach(bm => {
+            bm.markets?.find(m => m.key === 'h2h')?.outcomes?.forEach(o => {
+              if (!best[o.name] || o.price > best[o.name]) best[o.name] = o.price;
+            });
+          });
+          oddsMap[event.id] = best;
+          oddsMap[`${event.home_team}|${event.away_team}`.toLowerCase()] = best;
+        });
+      }
+    } catch(e) { console.warn('Odds API error:', e); }
+  }
+
+  // ── No API key — show fallback ──
+  // BUG FIX: The outer message <div style="grid-column:1/-1;..."> is now properly
+  // closed with </div> before the sample .map() cards are rendered.
+  if (!matches.length) {
+    grid.innerHTML = `
+      <div style="grid-column:1/-1;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:24px;text-align:center;">
+        <div style="font-size:2rem;margin-bottom:8px;">🏏</div>
+        <div style="font-weight:700;margin-bottom:6px;">No live matches found</div>
+        <div style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">Be on time for the next match!</div>
+      </div>
+      ${['India vs Pakistan','CSK vs MI','RCB vs KKR'].map((name, i) => {
+        const parts = name.split(' vs ');
+        return `<div class="match-card" onclick="goToMatch('demo${i}','${encodeURIComponent(name)}','IPL+2025')">
+          <div class="match-header"><span class="upcoming-badge">SAMPLE</span><div class="live-icon" style="background:#333;">TV</div>Cricket · IPL 2025</div>
+          <div class="match-teams">
+            <div class="team-row"><span class="team-flag">${getFlag(parts[0])}</span><span class="team-name">${parts[0]}</span><div class="team-score"><span class="score-num">—</span></div></div>
+            <div class="team-row"><span class="team-flag">${getFlag(parts[1])}</span><span class="team-name">${parts[1]}</span><div class="team-score"><span class="score-num">—</span></div></div>
+          </div>
+          <div class="match-odds">
+            <div class="odd-btn"><span class="odd-val">1.85</span><span class="odd-label">1</span></div>
+            <div class="odd-btn"><span class="odd-val">→</span><span class="odd-label">BET</span></div>
+            <div class="odd-btn"><span class="odd-val">2.10</span><span class="odd-label">2</span></div>
+          </div>
+        </div>`;
+      }).join('')}`;
+    updateLastUpdated();
+    return;
+  }
+
+  // ── Render live match cards ──
+  grid.innerHTML = matches.map(m => {
+    const odds = oddsMap[m.id] || oddsMap[`${m.team1}|${m.team2}`.toLowerCase()] || {};
+    const keys = Object.keys(odds);
+    const o1 = keys[0] ? odds[keys[0]]?.toFixed(2) : null;
+    const o2 = keys[1] ? odds[keys[1]]?.toFixed(2) : null;
+    const enc = encodeURIComponent(m.name);
+    const encL = encodeURIComponent(m.league);
+
+    return `<div class="match-card" onclick="goToMatch('${m.id}','${enc}','${encL}')">
+      <div class="match-header">
+        ${m.isLive
+          ? '<span class="innings-badge">LIVE</span><div class="live-icon">TV</div>'
+          : '<span class="upcoming-badge">UPCOMING</span><div class="live-icon" style="background:#333;">TV</div>'}
+        Cricket · ${m.league.substring(0,22)}
+      </div>
+      <div class="match-teams">
+        <div class="team-row">
+          <span class="team-flag">${getFlag(m.team1)}</span>
+          <span class="team-name">${m.team1}</span>
+          <div class="team-score"><span class="score-num">${m.score1}</span>${m.overs1?`<span style="font-size:0.65rem;color:var(--muted)">${m.overs1}</span>`:''}</div>
+        </div>
+        <div class="team-row">
+          <span class="team-flag">${getFlag(m.team2)}</span>
+          <span class="team-name">${m.team2}</span>
+          <div class="team-score"><span class="score-num">${m.score2}</span>${m.overs2?`<span style="font-size:0.65rem;color:var(--muted)">${m.overs2}</span>`:''}</div>
+        </div>
+        ${m.status?`<div style="font-size:0.68rem;color:var(--yellow);margin-top:2px;">${m.status.substring(0,48)}</div>`:''}
+      </div>
+      <div class="match-odds">
+        ${o1
+          ? `<div class="odd-btn" onclick="event.stopPropagation();goToMatch('${m.id}','${enc}','${encL}')"><span class="odd-val">${o1}</span><span class="odd-label">1</span></div>`
+          : `<div class="odd-btn locked"><span class="odd-val">—</span><span class="odd-label">1</span></div>`}
+        <div class="odd-btn" onclick="event.stopPropagation();goToMatch('${m.id}','${enc}','${encL}')">
+          <span class="odd-val" style="font-size:0.75rem;">BET</span><span class="odd-label">→</span>
+        </div>
+        ${o2
+          ? `<div class="odd-btn" onclick="event.stopPropagation();goToMatch('${m.id}','${enc}','${encL}')"><span class="odd-val">${o2}</span><span class="odd-label">2</span></div>`
+          : `<div class="odd-btn locked"><span class="odd-val">—</span><span class="odd-label">2</span></div>`}
+      </div>
+    </div>`;
+  }).join('');
+
+  updateLastUpdated();
+}
+
+function updateLastUpdated() {
+  const el = document.getElementById('matchesLastUpdated');
+  if (el) el.textContent = '· Updated ' + new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+}
+
+// ── Auto-refresh based on API settings ──
+(function setupAutoRefresh() {
+  const cfg = JSON.parse(localStorage.getItem('betx_api_settings') || '{}');
+  const ms = parseInt(cfg.scoreRefresh || 30000);
+  if (ms <= 0) return;
+  let timer = setInterval(loadLiveMatches, ms);
+  if (cfg.pauseHidden !== false) {
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { clearInterval(timer); }
+      else { loadLiveMatches(); timer = setInterval(loadLiveMatches, ms); }
+    });
+  }
+})();
+
+// ── Betslip ──
+function addToBetslip(card, match, pick, odd) {
+  const existing = bets.find(b => b.match === match);
+  if (existing) { showFlash('Already in betslip'); return; }
+  bets.push({ match, pick, odd: parseFloat(odd), stake: 100 });
+  renderBetslip();
+  card.style.borderColor = 'rgba(212,232,0,0.5)';
+  const bs = document.getElementById('betslip');
+  bs.style.display = 'flex';
+  bs.style.flexDirection = 'column';
+}
+function removeBet(i) { bets.splice(i, 1); renderBetslip(); }
+function renderBetslip() {
+  const empty = document.getElementById('betEmpty');
+  const items = document.getElementById('betItems');
+  const footer = document.getElementById('betFooter');
+  const count = document.getElementById('betCount');
+  count.textContent = bets.length + ' bet' + (bets.length !== 1 ? 's' : '');
+  if (!bets.length) { empty.style.display='flex'; items.style.display='none'; footer.style.display='none'; return; }
+  empty.style.display='none'; items.style.display='block'; footer.style.display='block';
+  items.innerHTML = bets.map((b, i) => `
+    <div class="bs-item">
+      <div class="bs-item-top"><div class="bs-item-match">${b.match}</div><button class="bs-item-close" onclick="removeBet(${i})">✕</button></div>
+      <div class="bs-item-pick">${b.pick}</div>
+      <div class="bs-item-odd">@ ${b.odd.toFixed(2)}</div>
+      <div class="bs-stake"><span class="stake-label">₹</span><input class="stake-input" type="number" value="${b.stake}" min="10" oninput="updateStake(${i},this.value)"></div>
+    </div>`).join('');
+  updateTotals();
+}
+function updateStake(i, val) { bets[i].stake = parseFloat(val) || 0; updateTotals(); }
+function updateTotals() {
+  const total = bets.reduce((s, b) => s + b.stake, 0);
+  const win = bets.reduce((s, b) => s + b.stake * b.odd, 0);
+  document.getElementById('totalStake').textContent = '₹' + total.toFixed(0);
+  document.getElementById('potentialWin').textContent = '₹' + win.toFixed(0);
+}
+function showFlash(msg) {
+  const f = document.createElement('div');
+  f.style.cssText = 'position:fixed;top:70px;right:290px;background:#252525;border:1px solid rgba(212,232,0,0.3);color:#f0f0f0;padding:8px 16px;border-radius:8px;font-size:0.8rem;z-index:999;';
+  f.textContent = msg; document.body.appendChild(f); setTimeout(() => f.remove(), 2000);
+}
+document.querySelectorAll('.bs-tab').forEach(t => {
+  t.addEventListener('click', () => { document.querySelectorAll('.bs-tab').forEach(x => x.classList.remove('active')); t.classList.add('active'); });
+});
+document.querySelectorAll('.sidebar-item').forEach(item => {
+  item.addEventListener('click', () => { document.querySelectorAll('.sidebar-item').forEach(x => x.classList.remove('active')); item.classList.add('active'); });
+});
+document.querySelectorAll('.cat-item').forEach(item => {
+  item.addEventListener('click', () => { document.querySelectorAll('.cat-item').forEach(x => x.classList.remove('active')); item.classList.add('active'); });
+});
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyDwClzaSsO9iamgBDctSfMEW6W5B88TkdQ",
+    authDomain: "parione-ee49d.firebaseapp.com",
+    projectId: "parione-ee49d",
+    storageBucket: "parione-ee49d.firebasestorage.app",
+    messagingSenderId: "824927188460",
+    appId: "1:824927188460:web:10cf0f5df2e4b01e293cc9",
+    measurementId: "G-VFPYB8418D"
+  };
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+
+</body>
+</html>

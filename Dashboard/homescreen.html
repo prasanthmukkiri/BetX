@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BetX — Play Bold</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Teko:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #080808;
+    --dark: #111111;
+    --card: #181818;
+    --gold: #D4A017;
+    --gold-light: #F5C842;
+    --gold-dim: #9A720F;
+    --red: #E63946;
+    --white: #F5F5F0;
+    --muted: #888880;
+    --border: rgba(212,160,23,0.18);
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--black); color: var(--white); min-height: 100vh; overflow-x: hidden; }
+  .bg-layer { position: fixed; inset: 0; z-index: 0; background: radial-gradient(ellipse 80% 60% at 70% 30%, rgba(212,160,23,0.07) 0%, transparent 65%), radial-gradient(ellipse 60% 50% at 20% 80%, rgba(230,57,70,0.05) 0%, transparent 60%), var(--black); }
+  .bg-grid { position: fixed; inset: 0; z-index: 0; background-image: linear-gradient(rgba(212,160,23,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(212,160,23,0.04) 1px, transparent 1px); background-size: 60px 60px; }
+
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 18px 48px; background: rgba(8,8,8,0.85); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 3px; color: var(--gold); text-shadow: 0 0 24px rgba(212,160,23,0.4); }
+  .logo span { color: var(--white); }
+  .nav-right { display: flex; gap: 12px; align-items: center; }
+  .nav-btn { padding: 9px 24px; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; border: none; }
+  .btn-ghost { background: transparent; color: var(--white); border: 1px solid rgba(255,255,255,0.15); }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-gold { background: var(--gold); color: var(--black); }
+  .btn-gold:hover { background: var(--gold-light); }
+
+  .hero { position: relative; z-index: 1; min-height: 100vh; display: flex; align-items: center; padding: 120px 48px 60px; gap: 60px; }
+  .hero-left { flex: 1; max-width: 600px; }
+  .hero-tag { display: inline-flex; align-items: center; gap: 8px; background: rgba(212,160,23,0.1); border: 1px solid var(--border); color: var(--gold); font-size: 0.75rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 6px 14px; border-radius: 40px; margin-bottom: 28px; }
+  .hero-tag::before { content:''; width: 6px; height: 6px; background: var(--gold); border-radius: 50%; animation: pulse 1.8s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.4)} }
+  h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3.5rem, 7vw, 6.5rem); line-height: 0.92; letter-spacing: 2px; margin-bottom: 24px; }
+  h1 .accent { color: var(--gold); }
+  h1 .red { color: var(--red); }
+  .hero-sub { font-size: 1.05rem; color: var(--muted); line-height: 1.65; max-width: 460px; margin-bottom: 40px; font-weight: 300; }
+  .hero-stats { display: flex; gap: 36px; margin-bottom: 40px; }
+  .stat-item { display: flex; flex-direction: column; gap: 4px; }
+  .stat-num { font-family: 'Teko', sans-serif; font-size: 1.8rem; font-weight: 500; color: var(--gold); line-height: 1; }
+  .stat-label { font-size: 0.72rem; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
+  .hero-cta { display: flex; gap: 14px; flex-wrap: wrap; }
+  .cta-primary { padding: 14px 36px; background: var(--gold); color: var(--black); font-weight: 700; font-size: 0.95rem; border: none; border-radius: 8px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: all 0.2s; box-shadow: 0 0 24px rgba(212,160,23,0.3); }
+  .cta-primary:hover { background: var(--gold-light); box-shadow: 0 0 36px rgba(212,160,23,0.5); transform: translateY(-1px); }
+  .cta-secondary { padding: 14px 36px; background: transparent; color: var(--white); font-weight: 600; font-size: 0.95rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: all 0.2s; }
+  .cta-secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+  .auth-card { position: relative; z-index: 1; width: 420px; flex-shrink: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 36px 36px 32px; box-shadow: 0 0 0 1px rgba(0,0,0,0.5), 0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(212,160,23,0.12); animation: slideUp 0.6s ease both; }
+  @keyframes slideUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+  .auth-tabs { display: flex; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 4px; margin-bottom: 28px; gap: 4px; }
+  .tab-btn { flex: 1; padding: 10px; background: transparent; border: none; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; letter-spacing: 0.5px; cursor: pointer; border-radius: 8px; transition: all 0.22s; }
+  .tab-btn.active { background: var(--gold); color: var(--black); }
+  .auth-panel { display: none; }
+  .auth-panel.active { display: block; }
+
+  .form-group { margin-bottom: 18px; }
+  .form-label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 8px; }
+  .input-wrap { position: relative; display: flex; align-items: center; }
+  .input-icon { position: absolute; left: 14px; color: var(--muted); font-size: 1rem; pointer-events: none; }
+  .form-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; padding: 12px 14px 12px 42px; border-radius: 8px; outline: none; transition: border-color 0.2s, background 0.2s; }
+  .form-input::placeholder { color: rgba(136,136,128,0.6); }
+  .form-input:focus { border-color: var(--gold); background: rgba(212,160,23,0.06); }
+  .phone-prefix { position: absolute; left: 14px; color: var(--gold); font-size: 0.9rem; font-weight: 600; pointer-events: none; }
+  .form-input.phone { padding-left: 52px; }
+  .forgot { display: block; text-align: right; font-size: 0.78rem; color: var(--gold-dim); text-decoration: none; margin-top: -10px; margin-bottom: 18px; cursor: pointer; }
+  .forgot:hover { color: var(--gold); }
+  .submit-btn { width: 100%; padding: 14px; background: var(--gold); color: var(--black); font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; border: none; border-radius: 8px; cursor: pointer; transition: all 0.22s; box-shadow: 0 4px 20px rgba(212,160,23,0.3); margin-top: 4px; }
+  .submit-btn:hover { background: var(--gold-light); box-shadow: 0 6px 28px rgba(212,160,23,0.45); }
+  .submit-btn:active { transform: scale(0.99); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .auth-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: rgba(136,136,128,0.5); font-size: 0.78rem; }
+  .auth-divider::before, .auth-divider::after { content:''; flex:1; height: 1px; background: rgba(255,255,255,0.08); }
+  .terms { font-size: 0.74rem; color: var(--muted); text-align: center; margin-top: 18px; line-height: 1.6; }
+  .terms a { color: var(--gold); text-decoration: none; cursor: pointer; }
+  .terms a:hover { text-decoration: underline; }
+  .pw-toggle { position: absolute; right: 14px; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.1rem; padding: 0; transition: color 0.2s; }
+  .pw-toggle:hover { color: var(--gold); }
+
+  .auth-success-card { text-align: center; padding: 12px 0; }
+  .auth-success-icon { width: 68px; height: 68px; background: rgba(212,160,23,0.1); border: 2px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 18px; }
+  .auth-success-card h3 { font-family: 'Teko', sans-serif; font-size: 1.8rem; letter-spacing: 1px; margin-bottom: 8px; }
+  .auth-success-card p { color: var(--muted); font-size: 0.88rem; margin-bottom: 22px; }
+  .logout-btn { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: var(--muted); padding: 9px 22px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+  .logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+  .user-badge { display: none; align-items: center; gap: 10px; }
+  .avatar { width: 36px; height: 36px; background: var(--gold); color: var(--black); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; }
+  .user-name { font-size: 0.9rem; font-weight: 600; }
+
+  .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--card); border: 1px solid var(--border); color: var(--white); padding: 14px 28px; border-radius: 10px; font-size: 0.9rem; z-index: 999; transition: transform 0.35s cubic-bezier(.16,1,.3,1); box-shadow: 0 12px 40px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 10px; min-width: 260px; justify-content: center; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success::before { content:'✅'; }
+  .toast.error::before { content:'⚠️'; }
+  .toast.info::before { content:'📱'; }
+
+  .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.2); border-top-color: #111; border-radius: 50%; animation: btnSpin .6s linear infinite; vertical-align: middle; margin-right: 6px; }
+  @keyframes btnSpin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 860px) {
+    nav { padding: 16px 20px; }
+    .hero { flex-direction: column; align-items: flex-start; padding: 100px 20px 40px; gap: 36px; }
+    .auth-card { width: 100%; }
+    .hero-stats { gap: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-layer"></div>
+<div class="bg-grid"></div>
+
+<nav>
+  <div class="logo">BET<span>X</span></div>
+  <div class="nav-right" id="navRight">
+    <button class="nav-btn btn-ghost" onclick="showTab('login')">Log In</button>
+    <button class="nav-btn btn-gold" onclick="showTab('register')">Register Now</button>
+  </div>
+  <div class="user-badge" id="userBadge">
+    <div class="avatar" id="userAvatar">?</div>
+    <span class="user-name" id="userNameNav"></span>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">Live Betting Platform</div>
+    <h1>BET<br><span class="accent">SMARTER.</span><br>WIN <span class="red">BIG.</span></h1>
+    <p class="hero-sub">Real-time odds. Instant payouts. 100+ sports markets available 24/7. Join millions of players placing bets right now.</p>
+    <div class="hero-stats">
+      <div class="stat-item"><span class="stat-num">2.4M+</span><span class="stat-label">Active Users</span></div>
+      <div class="stat-item"><span class="stat-num">₹500Cr+</span><span class="stat-label">Paid Out</span></div>
+      <div class="stat-item"><span class="stat-num">100+</span><span class="stat-label">Live Markets</span></div>
+    </div>
+    <div class="hero-cta">
+      <button class="cta-primary" onclick="showTab('register')">Get Started Free</button>
+      <button class="cta-secondary" onclick="showTab('login')">Sign In</button>
+    </div>
+  </div>
+
+  <div class="auth-card" id="authCard">
+    <div class="auth-tabs" id="authTabs">
+      <button class="tab-btn active" id="tabLogin" onclick="showTab('login')">Login</button>
+      <button class="tab-btn" id="tabRegister" onclick="showTab('register')">Register</button>
+    </div>
+
+    <!-- ══ LOGIN PANEL ══ -->
+    <div class="auth-panel active" id="panelLogin">
+      <div class="form-group">
+        <label class="form-label">Mobile Number</label>
+        <div class="input-wrap">
+          <span class="phone-prefix">+91</span>
+          <input class="form-input phone" type="tel" id="loginPhone" placeholder="98765 43210" maxlength="10"
+            onkeydown="if(event.key==='Enter') handleLogin()">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input class="form-input" type="password" id="loginPass" placeholder="Enter password" style="padding-right:44px"
+            onkeydown="if(event.key==='Enter') handleLogin()">
+          <button class="pw-toggle" onclick="togglePw('loginPass',this)" type="button">👁</button>
+        </div>
+      </div>
+      <a class="forgot" onclick="showForgotFlow()">Forgot password?</a>
+      <button class="submit-btn" id="loginBtn" onclick="handleLogin()">Login to Account</button>
+      <div class="auth-divider">or</div>
+      <p class="terms">Don't have an account? <a onclick="showTab('register')">Register here</a></p>
+    </div>
+
+    <!-- ══ REGISTER PANEL ══ -->
+    <div class="auth-panel" id="panelRegister">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input class="form-input" type="text" id="regName" placeholder="Your full name">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mobile Number</label>
+        <div class="input-wrap">
+          <span class="phone-prefix">+91</span>
+          <input class="form-input phone" type="tel" id="regPhone" placeholder="98765 43210" maxlength="10">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input class="form-input" type="password" id="regPass" placeholder="Create password (min 6 chars)" style="padding-right:44px">
+          <button class="pw-toggle" onclick="togglePw('regPass',this)" type="button">👁</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input class="form-input" type="password" id="regConfirm" placeholder="Re-enter password" style="padding-right:44px">
+          <button class="pw-toggle" onclick="togglePw('regConfirm',this)" type="button">👁</button>
+        </div>
+      </div>
+      <button class="submit-btn" id="registerBtn" onclick="handleRegister()">Create Account</button>
+      <p class="terms" style="margin-top:14px">By registering you agree to our <a href="#">Terms</a> &amp; <a href="#">Privacy Policy</a>. Already have an account? <a onclick="showTab('login')">Login</a></p>
+    </div>
+
+    <!-- ══ FORGOT PASSWORD PANEL ══ -->
+    <div class="auth-panel" id="panelForgot">
+      <!-- Step 1: Enter phone -->
+      <div id="forgotStep1">
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="font-size:2rem;margin-bottom:8px;">🔑</div>
+          <div style="font-family:'Teko',sans-serif;font-size:1.4rem;letter-spacing:1px;margin-bottom:6px;">Reset Password</div>
+          <p style="font-size:0.82rem;color:var(--muted);">Enter your registered mobile number</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mobile Number</label>
+          <div class="input-wrap">
+            <span class="phone-prefix">+91</span>
+            <input class="form-input phone" type="tel" id="forgotPhone" placeholder="98765 43210" maxlength="10">
+          </div>
+        </div>
+        <button class="submit-btn" id="forgotSendBtn" onclick="handleForgotVerify()">Verify Number →</button>
+        <p class="terms" style="margin-top:12px;"><a onclick="showTab('login')">← Back to Login</a></p>
+      </div>
+
+      <!-- Step 2: New password (no OTP) -->
+      <div id="forgotStep2" style="display:none;">
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="font-size:2rem;margin-bottom:8px;">🔒</div>
+          <div style="font-family:'Teko',sans-serif;font-size:1.4rem;letter-spacing:1px;margin-bottom:6px;">Set New Password</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input class="form-input" type="password" id="newPass" placeholder="New password (min 6 chars)" style="padding-right:44px">
+            <button class="pw-toggle" onclick="togglePw('newPass',this)" type="button">👁</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm New Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input class="form-input" type="password" id="newPassConfirm" placeholder="Re-enter new password" style="padding-right:44px">
+            <button class="pw-toggle" onclick="togglePw('newPassConfirm',this)" type="button">👁</button>
+          </div>
+        </div>
+        <button class="submit-btn" onclick="handleResetPassword()">Reset Password</button>
+        <p class="terms" style="margin-top:12px;"><a onclick="showForgotStep(1)">← Back</a></p>
+      </div>
+    </div>
+
+    <!-- ══ LOGGED IN PANEL ══ -->
+    <div class="auth-panel" id="panelLoggedIn">
+      <div class="auth-success-card">
+        <div class="auth-success-icon">🎯</div>
+        <h3 id="welcomeName">Welcome Back!</h3>
+        <p>Your account is active. Start placing your bets now.</p>
+        <button class="submit-btn" style="margin-bottom:12px" onclick="window.location.href='dashboard.html'">Go to Dashboard →</button>
+        <button class="logout-btn" onclick="handleLogout()">Logout</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let forgotPhone = null;
+
+// ══════════════════════════════════════
+//  PAGE LOAD
+// ══════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  const session = sessionStorage.getItem('betx_session');
+  if (session) {
+    const user = JSON.parse(session);
+    setLoggedInUI(user.name);
+  }
+});
+
+// ══════════════════════════════════════
+//  TAB / PANEL NAVIGATION
+// ══════════════════════════════════════
+function showTab(tab) {
+  ['tabLogin','tabRegister'].forEach(id => document.getElementById(id)?.classList.remove('active'));
+  ['panelLogin','panelRegister','panelForgot','panelLoggedIn'].forEach(id => document.getElementById(id)?.classList.remove('active'));
+
+  if (sessionStorage.getItem('betx_session')) {
+    document.getElementById('panelLoggedIn').classList.add('active');
+    return;
+  }
+  if (tab === 'login') {
+    document.getElementById('tabLogin').classList.add('active');
+    document.getElementById('panelLogin').classList.add('active');
+  } else {
+    document.getElementById('tabRegister').classList.add('active');
+    document.getElementById('panelRegister').classList.add('active');
+  }
+}
+
+function showForgotFlow() {
+  ['panelLogin','panelRegister','panelLoggedIn'].forEach(id => document.getElementById(id)?.classList.remove('active'));
+  document.getElementById('panelForgot').classList.add('active');
+  showForgotStep(1);
+}
+
+function showForgotStep(n) {
+  [1, 2].forEach(i => {
+    const el = document.getElementById(`forgotStep${i}`);
+    if (el) el.style.display = i === n ? 'block' : 'none';
+  });
+}
+
+function togglePw(id, btn) {
+  const el = document.getElementById(id);
+  if (el.type === 'password') { el.type = 'text'; btn.textContent = '🙈'; }
+  else { el.type = 'password'; btn.textContent = '👁'; }
+}
+
+// ══════════════════════════════════════
+//  REGISTER (no OTP)
+// ══════════════════════════════════════
+function handleRegister() {
+  const name    = document.getElementById('regName').value.trim();
+  const phone   = document.getElementById('regPhone').value.trim();
+  const pass    = document.getElementById('regPass').value;
+  const confirm = document.getElementById('regConfirm').value;
+
+  if (!name)                                         { showToast('Please enter your full name', 'error'); return; }
+  if (phone.length !== 10 || !/^\d+$/.test(phone))  { showToast('Enter a valid 10-digit mobile number', 'error'); return; }
+  if (pass.length < 6)                               { showToast('Password must be at least 6 characters', 'error'); return; }
+  if (pass !== confirm)                              { showToast('Passwords do not match', 'error'); return; }
+
+  const users = JSON.parse(localStorage.getItem('betx_users') || '[]');
+  if (users.find(u => String(u.phone) === phone)) {
+    showToast('This number is already registered. Please login.', 'error');
+    return;
+  }
+
+  const newUser = {
+    name,
+    phone,
+    password: pass,
+    balance: 0,
+    joinedAt: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+  };
+  users.push(newUser);
+  localStorage.setItem('betx_users', JSON.stringify(users));
+
+  showToast('Account created! Please login.', 'success');
+
+  setTimeout(() => {
+    showTab('login');
+    document.getElementById('loginPhone').value = phone;
+    document.getElementById('loginPass').value = '';
+  }, 1500);
+}
+
+// ══════════════════════════════════════
+//  FORGOT PASSWORD — VERIFY PHONE
+// ══════════════════════════════════════
+function handleForgotVerify() {
+  const phone = document.getElementById('forgotPhone').value.trim();
+
+  if (phone.length !== 10 || !/^\d+$/.test(phone)) {
+    showToast('Enter a valid 10-digit mobile number', 'error');
+    return;
+  }
+
+  const users = JSON.parse(localStorage.getItem('betx_users') || '[]');
+  if (!users.find(u => String(u.phone) === phone)) {
+    showToast('No account found with this number', 'error');
+    return;
+  }
+
+  forgotPhone = phone;
+  showForgotStep(2);
+  showToast('Number verified! Set your new password.', 'success');
+}
+
+// ══════════════════════════════════════
+//  FORGOT PASSWORD — RESET
+// ══════════════════════════════════════
+function handleResetPassword() {
+  const newPass    = document.getElementById('newPass').value;
+  const newConfirm = document.getElementById('newPassConfirm').value;
+
+  if (newPass.length < 6)     { showToast('Password must be at least 6 characters', 'error'); return; }
+  if (newPass !== newConfirm) { showToast('Passwords do not match', 'error'); return; }
+
+  const users = JSON.parse(localStorage.getItem('betx_users') || '[]');
+  const idx   = users.findIndex(u => String(u.phone) === forgotPhone);
+  if (idx === -1) { showToast('Account not found', 'error'); return; }
+
+  users[idx].password = newPass;
+  localStorage.setItem('betx_users', JSON.stringify(users));
+
+  forgotPhone = null;
+  showToast('Password reset! Please login.', 'success');
+  setTimeout(() => showTab('login'), 1500);
+}
+
+// ══════════════════════════════════════
+//  LOGIN
+// ══════════════════════════════════════
+function handleLogin() {
+  const phone = document.getElementById('loginPhone').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+
+  if (!phone || !pass) { showToast('Please enter your credentials', 'error'); return; }
+
+  // Admin login
+  if (phone === 'admin' && pass === 'betx@admin123') {
+    sessionStorage.setItem('betx_admin', 'true');
+    showToast('Admin login successful!', 'success');
+    setTimeout(() => { window.location.href = 'admin.html'; }, 1000);
+    return;
+  }
+
+  if (!/^\d{10}$/.test(phone)) { showToast('Enter a valid 10-digit mobile number', 'error'); return; }
+
+  const users = JSON.parse(localStorage.getItem('betx_users') || '[]');
+  const user  = users.find(u => String(u.phone) === phone && u.password === pass);
+
+  if (user) {
+    sessionStorage.setItem('betx_session', JSON.stringify({ name: user.name, phone: user.phone }));
+    showToast('Login successful! Redirecting... 👋', 'success');
+    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
+    return;
+  }
+
+  showToast('Invalid number or password', 'error');
+}
+
+// ══════════════════════════════════════
+//  UI HELPERS
+// ══════════════════════════════════════
+function setLoggedInUI(name) {
+  ['panelLogin','panelRegister','panelForgot'].forEach(id => document.getElementById(id)?.classList.remove('active'));
+  document.getElementById('panelLoggedIn').classList.add('active');
+  document.getElementById('navRight').style.display = 'none';
+  const badge = document.getElementById('userBadge');
+  badge.style.display = 'flex';
+  document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
+  document.getElementById('userNameNav').textContent = name;
+  document.getElementById('welcomeName').textContent = 'Welcome, ' + name.split(' ')[0] + '!';
+}
+
+function handleLogout() {
+  sessionStorage.removeItem('betx_session');
+  document.getElementById('navRight').style.display = 'flex';
+  document.getElementById('userBadge').style.display = 'none';
+  document.getElementById('loginPhone').value = '';
+  document.getElementById('loginPass').value = '';
+  showTab('login');
+  showToast('You have been logged out', 'error');
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + (type || 'success');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BetX — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Teko:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{--black:#080808;--dark:#111111;--card:#181818;--gold:#D4A017;--gold-light:#F5C842;--gold-dim:#9A720F;--red:#E63946;--green:#2ecc71;--white:#F5F5F0;--muted:#888880;--border:rgba(212,160,23,0.18);}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--white);min-height:100vh;}
+  .bg-layer{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 80% 60% at 70% 30%,rgba(212,160,23,0.06) 0%,transparent 65%),radial-gradient(ellipse 60% 50% at 20% 80%,rgba(230,57,70,0.04) 0%,transparent 60%),var(--black);}
+  .bg-grid{position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(212,160,23,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(212,160,23,0.03) 1px,transparent 1px);background-size:60px 60px;}
+  #adminLogin{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+  .login-box{width:400px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px 36px;box-shadow:0 32px 80px rgba(0,0,0,0.6),inset 0 1px 0 rgba(212,160,23,0.12);animation:slideUp 0.5s ease both;}
+  @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .login-logo{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--gold);letter-spacing:3px;text-align:center;margin-bottom:6px;}
+  .login-logo span{color:var(--white);}
+  .login-subtitle{text-align:center;font-size:0.78rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:32px;}
+  .admin-badge{display:flex;align-items:center;gap:6px;background:rgba(230,57,70,0.12);border:1px solid rgba(230,57,70,0.3);color:var(--red);font-size:0.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:40px;margin:0 auto 24px;width:fit-content;}
+  .form-group{margin-bottom:18px;}
+  .form-label{display:block;font-size:0.75rem;font-weight:600;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px;}
+  .input-wrap{position:relative;display:flex;align-items:center;}
+  .input-icon{position:absolute;left:14px;color:var(--muted);font-size:1rem;pointer-events:none;}
+  .form-input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--white);font-family:'DM Sans',sans-serif;font-size:0.95rem;padding:12px 14px 12px 42px;border-radius:8px;outline:none;transition:border-color 0.2s;}
+  .form-input:focus{border-color:var(--gold);background:rgba(212,160,23,0.05);}
+  .pw-toggle{position:absolute;right:14px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;padding:0;transition:color 0.2s;}
+  .pw-toggle:hover{color:var(--gold);}
+  .submit-btn{width:100%;padding:14px;background:var(--gold);color:var(--black);font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:none;border-radius:8px;cursor:pointer;transition:all 0.22s;box-shadow:0 4px 20px rgba(212,160,23,0.3);margin-top:8px;}
+  .submit-btn:hover{background:var(--gold-light);}
+  .error-msg{display:none;background:rgba(230,57,70,0.1);border:1px solid rgba(230,57,70,0.3);color:var(--red);font-size:0.82rem;padding:10px 14px;border-radius:8px;margin-top:14px;text-align:center;}
+  .error-msg.show{display:block;}
+  #adminPanel{display:none;position:relative;z-index:1;min-height:100vh;}
+  .admin-topbar{background:rgba(8,8,8,0.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+  .topbar-left{display:flex;align-items:center;gap:14px;}
+  .topbar-logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--gold);letter-spacing:3px;}
+  .topbar-logo span{color:var(--white);}
+  .topbar-badge{background:rgba(230,57,70,0.15);border:1px solid rgba(230,57,70,0.35);color:var(--red);font-size:0.68rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:4px;}
+  .topbar-right{display:flex;align-items:center;gap:14px;}
+  .admin-info{font-size:0.85rem;color:var(--muted);}
+  .admin-info strong{color:var(--gold);}
+  .logout-btn{background:transparent;border:1px solid rgba(255,255,255,0.12);color:var(--muted);padding:7px 18px;border-radius:6px;cursor:pointer;font-size:0.82rem;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+  .logout-btn:hover{border-color:var(--red);color:var(--red);}
+  .admin-content{padding:36px 40px;}
+  .admin-tabs{display:flex;gap:4px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:28px;width:fit-content;}
+  .admin-tab{padding:9px 22px;background:transparent;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:600;border-radius:7px;cursor:pointer;transition:all 0.18s;letter-spacing:0.3px;display:flex;align-items:center;gap:6px;}
+  .admin-tab.active{background:var(--gold);color:var(--black);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+  .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px;}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 22px;display:flex;flex-direction:column;gap:6px;}
+  .stat-card-label{font-size:0.72rem;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
+  .stat-card-value{font-family:'Teko',sans-serif;font-size:2rem;color:var(--gold);line-height:1;}
+  .stat-card-value.red{color:var(--red);}
+  .stat-card-value.green{color:var(--green);}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;}
+  .section-title{font-family:'Teko',sans-serif;font-size:1.5rem;letter-spacing:1px;}
+  .search-bar{display:flex;align-items:center;gap:10px;}
+  .search-wrap{position:relative;}
+  .search-input{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--white);font-family:'DM Sans',sans-serif;font-size:0.88rem;padding:9px 14px 9px 36px;border-radius:8px;outline:none;width:220px;transition:border-color 0.2s;}
+  .search-input:focus{border-color:var(--gold);}
+  .search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.9rem;pointer-events:none;}
+  .export-btn{background:rgba(212,160,23,0.1);border:1px solid var(--border);color:var(--gold);padding:9px 18px;border-radius:8px;cursor:pointer;font-size:0.82rem;font-weight:600;font-family:'DM Sans',sans-serif;transition:all 0.2s;letter-spacing:0.5px;}
+  .export-btn:hover{background:rgba(212,160,23,0.18);}
+  .table-wrap{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;min-width:700px;}
+  thead{background:rgba(212,160,23,0.07);border-bottom:1px solid var(--border);}
+  th{padding:14px 18px;text-align:left;font-size:0.72rem;font-weight:700;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;}
+  td{padding:14px 18px;font-size:0.88rem;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:rgba(255,255,255,0.02);}
+  .user-avatar-sm{width:32px;height:32px;background:var(--gold);color:var(--black);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:0.78rem;margin-right:10px;flex-shrink:0;}
+  .user-cell{display:flex;align-items:center;}
+  .balance-badge{background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.25);color:var(--green);padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:600;}
+  .phone-text{color:var(--muted);font-size:0.85rem;}
+  .joined-text{color:var(--muted);font-size:0.82rem;}
+  .delete-btn{background:transparent;border:1px solid rgba(230,57,70,0.25);color:rgba(230,57,70,0.6);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.78rem;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+  .delete-btn:hover{background:rgba(230,57,70,0.1);border-color:var(--red);color:var(--red);}
+  .empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+  .empty-state .empty-icon{font-size:2.5rem;margin-bottom:12px;}
+
+  /* ── CARDS (shared for payments + withdrawals) ── */
+  .request-filter-bar{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+  .rf-btn{padding:7px 18px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:var(--muted);font-size:0.8rem;font-weight:600;border-radius:20px;cursor:pointer;transition:all 0.18s;font-family:'DM Sans',sans-serif;}
+  .rf-btn.active{background:rgba(212,160,23,0.12);border-color:var(--gold);color:var(--gold);}
+  .rf-btn.green-filter.active{background:rgba(46,204,113,0.1);border-color:var(--green);color:var(--green);}
+  .rf-btn.red-filter.active{background:rgba(230,57,70,0.1);border-color:var(--red);color:var(--red);}
+  .pay-stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px;}
+  .pay-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
+  .pay-stat-label{font-size:0.7rem;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;}
+  .pay-stat-val{font-family:'Teko',sans-serif;font-size:1.7rem;line-height:1;}
+  .request-cards{display:flex;flex-direction:column;gap:14px;}
+  .request-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 22px;display:grid;gap:18px;align-items:start;transition:border-color 0.2s;}
+  .request-card:hover{border-color:rgba(212,160,23,0.35);}
+  .request-card.approved{border-left:3px solid var(--green);}
+  .request-card.rejected{border-left:3px solid var(--red);}
+  .request-card.pending{border-left:3px solid var(--gold);}
+  .request-card.has-screenshot{grid-template-columns:auto 1fr auto;}
+  .request-card.no-screenshot{grid-template-columns:1fr auto;}
+  .pay-screenshot{width:80px;height:80px;border-radius:10px;object-fit:cover;border:1px solid rgba(255,255,255,0.1);cursor:pointer;transition:transform 0.2s;flex-shrink:0;}
+  .pay-screenshot:hover{transform:scale(1.05);}
+  .pay-info{display:flex;flex-direction:column;gap:6px;}
+  .pay-user{font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .pay-meta{display:flex;gap:14px;flex-wrap:wrap;}
+  .pay-meta-item{font-size:0.8rem;color:var(--muted);display:flex;align-items:center;gap:4px;}
+  .pay-meta-item strong{color:var(--white);}
+  .pay-utr{font-size:0.82rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);padding:4px 10px;border-radius:6px;color:var(--gold);font-weight:600;letter-spacing:0.5px;font-family:monospace;}
+  .pay-time{font-size:0.75rem;color:var(--muted);}
+  .pay-status{font-size:0.68rem;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;}
+  .pay-status.pending{background:rgba(212,160,23,0.12);color:var(--gold);border:1px solid rgba(212,160,23,0.3);}
+  .pay-status.approved{background:rgba(46,204,113,0.12);color:var(--green);border:1px solid rgba(46,204,113,0.3);}
+  .pay-status.rejected{background:rgba(230,57,70,0.12);color:var(--red);border:1px solid rgba(230,57,70,0.3);}
+  .pay-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
+  .pay-amount{font-family:'Teko',sans-serif;font-size:1.6rem;color:var(--gold);line-height:1;text-align:right;}
+  .pay-amount.wd{color:var(--red);}
+  .pay-action-btns{display:flex;gap:8px;}
+  .approve-btn{padding:7px 16px;background:rgba(46,204,113,0.12);border:1px solid rgba(46,204,113,0.35);color:var(--green);font-size:0.8rem;font-weight:700;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.18s;}
+  .approve-btn:hover{background:rgba(46,204,113,0.22);}
+  .approve-btn:disabled{opacity:0.4;cursor:not-allowed;}
+  .reject-btn{padding:7px 16px;background:rgba(230,57,70,0.1);border:1px solid rgba(230,57,70,0.3);color:var(--red);font-size:0.8rem;font-weight:700;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.18s;}
+  .reject-btn:hover{background:rgba(230,57,70,0.2);}
+  .reject-btn:disabled{opacity:0.4;cursor:not-allowed;}
+  .loading-state{text-align:center;padding:60px 20px;color:var(--muted);}
+  .spinner{width:36px;height:36px;border:3px solid rgba(212,160,23,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 14px;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .bank-detail-box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:10px 12px;margin-top:4px;display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;}
+  .bank-detail-row{font-size:0.75rem;color:var(--muted);}
+  .bank-detail-row strong{color:var(--white);}
+  .lightbox{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.92);align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+  .lightbox.show{display:flex;}
+  .lightbox img{max-width:90vw;max-height:90vh;border-radius:12px;border:1px solid var(--border);}
+  .lightbox-close{position:absolute;top:20px;right:24px;background:rgba(255,255,255,0.1);border:none;color:var(--white);font-size:1.5rem;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .lightbox-close:hover{background:rgba(255,255,255,0.2);}
+  .modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;}
+  .modal-overlay.show{display:flex;}
+  .modal-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px 28px;width:360px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.5);}
+  .modal-icon{font-size:2rem;margin-bottom:14px;}
+  .modal-title{font-family:'Teko',sans-serif;font-size:1.5rem;margin-bottom:8px;}
+  .modal-msg{color:var(--muted);font-size:0.88rem;margin-bottom:24px;}
+  .modal-actions{display:flex;gap:10px;}
+  .modal-cancel{flex:1;padding:11px;background:transparent;border:1px solid rgba(255,255,255,0.12);color:var(--muted);border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.9rem;transition:all 0.2s;}
+  .modal-cancel:hover{border-color:var(--white);color:var(--white);}
+  .modal-confirm{flex:1;padding:11px;background:var(--red);border:none;color:var(--white);border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.9rem;transition:all 0.2s;}
+  .modal-confirm:hover{background:#ff4d58;}
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--card);border:1px solid var(--border);color:var(--white);padding:12px 24px;border-radius:10px;font-size:0.88rem;z-index:999;transition:transform 0.3s cubic-bezier(.16,1,.3,1);box-shadow:0 12px 40px rgba(0,0,0,0.5);display:flex;align-items:center;gap:8px;}
+  .toast.show{transform:translateX(-50%) translateY(0);}
+  .toast.success::before{content:'✅';}
+  .toast.error::before{content:'⚠️';}
+</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+<div class="bg-grid"></div>
+
+<!-- ADMIN LOGIN -->
+<div id="adminLogin">
+  <div class="login-box">
+    <div class="login-logo">BET<span>X</span></div>
+    <div class="login-subtitle">Admin Portal</div>
+    <div class="admin-badge">🔐 Restricted Access</div>
+    <div class="form-group">
+      <label class="form-label">Admin Username</label>
+      <div class="input-wrap"><span class="input-icon">👤</span><input class="form-input" type="text" id="adminUser" placeholder="Enter admin username"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Admin Password</label>
+      <div class="input-wrap"><span class="input-icon">🔒</span><input class="form-input" type="password" id="adminPass" placeholder="Enter admin password" style="padding-right:44px" onkeydown="if(event.key==='Enter')adminLogin()"><button class="pw-toggle" onclick="togglePw('adminPass',this)" type="button">👁</button></div>
+    </div>
+    <button class="submit-btn" onclick="adminLogin()">Access Admin Panel</button>
+    <div class="error-msg" id="loginError">❌ Invalid credentials. Access denied.</div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminPanel">
+  <div class="admin-topbar">
+    <div class="topbar-left"><div class="topbar-logo">BET<span>X</span></div><div class="topbar-badge">Admin Panel</div></div>
+    <div class="topbar-right"><div class="admin-info">Logged in as <strong>Admin</strong></div><button class="logout-btn" onclick="adminLogout()">Logout</button></div>
+  </div>
+
+  <div class="admin-content">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-card-label">Total Users</div><div class="stat-card-value" id="statTotal">0</div></div>
+      <div class="stat-card"><div class="stat-card-label">Total Balance</div><div class="stat-card-value green" id="statBalance">₹0</div></div>
+      <div class="stat-card"><div class="stat-card-label">Avg Balance</div><div class="stat-card-value" id="statAvg">₹0</div></div>
+      <div class="stat-card"><div class="stat-card-label">Newest User</div><div class="stat-card-value" id="statNewest" style="font-size:1.1rem;padding-top:6px">—</div></div>
+    </div>
+
+    <!--
+      TAB ORDER (DOM index):
+        0 → API Settings  (redirects to API.html, does NOT call switchTab)
+        1 → Users         (switchTab 'users')
+        2 → Deposits      (switchTab 'payments')
+        3 → Withdrawals   (switchTab 'withdrawals')
+
+      BUG FIX: tabMap was {users:0, payments:1, withdrawals:2} which mapped
+      every key one slot too low, hitting the wrong button.
+      FIXED:  tabMap = {users:1, payments:2, withdrawals:3}
+    -->
+    <div class="admin-tabs">
+      <button class="admin-tab" onclick="window.location.href='API.html'">
+        ⚙️ API Settings
+      </button>
+      <button class="admin-tab active" onclick="switchTab('users')">👥 Users</button>
+      <button class="admin-tab" onclick="switchTab('payments')" id="paymentsTabBtn">
+        💳 Deposits <span id="pendingDepBadge" style="display:none;background:var(--red);color:#fff;font-size:0.65rem;padding:1px 6px;border-radius:10px;margin-left:4px;font-family:'DM Sans',sans-serif;">0</span>
+      </button>
+      <button class="admin-tab" onclick="switchTab('withdrawals')" id="withdrawalsTabBtn">
+        🏦 Withdrawals <span id="pendingWdBadge" style="display:none;background:var(--red);color:#fff;font-size:0.65rem;padding:1px 6px;border-radius:10px;margin-left:4px;font-family:'DM Sans',sans-serif;">0</span>
+      </button>
+    </div>
+
+    <!-- USERS TAB -->
+    <div class="tab-panel active" id="tab-users">
+      <div class="section-header">
+        <div class="section-title">Registered Users</div>
+        <div class="search-bar">
+          <div class="search-wrap"><span class="search-icon">🔍</span><input class="search-input" type="text" id="searchInput" placeholder="Search name or phone..." oninput="renderTable()"></div>
+          <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>#</th><th>User</th><th>Phone</th><th>Password</th><th>Balance</th><th>Registered</th><th>Action</th></tr></thead>
+        <tbody id="usersTableBody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- DEPOSITS TAB -->
+    <div class="tab-panel" id="tab-payments">
+      <div class="pay-stats-row">
+        <div class="pay-stat"><div class="pay-stat-label">Total Requests</div><div class="pay-stat-val" id="payStatTotal" style="color:var(--gold)">0</div></div>
+        <div class="pay-stat"><div class="pay-stat-label">Pending</div><div class="pay-stat-val" id="payStatPending" style="color:var(--gold)">0</div></div>
+        <div class="pay-stat"><div class="pay-stat-label">Approved</div><div class="pay-stat-val" id="payStatApproved" style="color:var(--green)">0</div></div>
+        <div class="pay-stat"><div class="pay-stat-label">Total Approved ₹</div><div class="pay-stat-val" id="payStatAmount" style="color:var(--green)">₹0</div></div>
+      </div>
+      <div class="request-filter-bar">
+        <button class="rf-btn active" onclick="filterPayments(this,'all')">All</button>
+        <button class="rf-btn" onclick="filterPayments(this,'pending')">⏳ Pending</button>
+        <button class="rf-btn green-filter" onclick="filterPayments(this,'approved')">✅ Approved</button>
+        <button class="rf-btn red-filter" onclick="filterPayments(this,'rejected')">❌ Rejected</button>
+        <button class="export-btn" style="margin-left:auto" onclick="loadPayments()">🔄 Refresh</button>
+      </div>
+      <div id="paymentsList"><div class="loading-state"><div class="spinner"></div><p>Loading deposits...</p></div></div>
+    </div>
+
+    <!-- WITHDRAWALS TAB -->
+    <div class="tab-panel" id="tab-withdrawals">
+      <div class="pay-stats-row">
+        <div class="pay-stat"><div class="pay-stat-label">Total Requests</div><div class="pay-stat-val" id="wdStatTotal" style="color:var(--gold)">0</div></div>
+        <div class="pay-stat"><div class="pay-stat-label">Pending</div><div class="pay-stat-val" id="wdStatPending" style="color:var(--gold)">0</div></div>
+        <div class="pay-stat"><div class="pay-stat-label">Approved</div><div class="pay-stat-val" id="wdStatApproved" style="color:var(--green)">0</div></div>
+        <div class="pay-stat"><div class="pay-stat-label">Total Paid Out ₹</div><div class="pay-stat-val" id="wdStatAmount" style="color:var(--red)">₹0</div></div>
+      </div>
+      <div class="request-filter-bar">
+        <button class="rf-btn active" onclick="filterWithdrawals(this,'all')">All</button>
+        <button class="rf-btn" onclick="filterWithdrawals(this,'pending')">⏳ Pending</button>
+        <button class="rf-btn green-filter" onclick="filterWithdrawals(this,'approved')">✅ Approved</button>
+        <button class="rf-btn red-filter" onclick="filterWithdrawals(this,'rejected')">❌ Rejected</button>
+        <button class="export-btn" style="margin-left:auto" onclick="loadWithdrawals()">🔄 Refresh</button>
+      </div>
+      <div id="withdrawalsList"><div class="loading-state"><div class="spinner"></div><p>Loading withdrawals...</p></div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Screenshot Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="" alt="Screenshot">
+</div>
+
+<!-- Delete Modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box">
+    <div class="modal-icon">🗑️</div>
+    <div class="modal-title">Delete User?</div>
+    <div class="modal-msg" id="deleteModalMsg">This will permanently remove the user.</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-confirm" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, updateDoc, orderBy, query }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyDwClzaSsO9iamgBDctSfMEW6W5B88TkdQ",
+  authDomain:"parione-ee49d.firebaseapp.com",
+  projectId:"parione-ee49d",
+  storageBucket:"parione-ee49d.firebasestorage.app",
+  messagingSenderId:"824927188460",
+  appId:"1:824927188460:web:10cf0f5df2e4b01e293cc9"
+};
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+window._db=db; window._getDocs=getDocs; window._doc=doc; window._updateDoc=updateDoc;
+window._collection=collection; window._query=query; window._orderBy=orderBy;
+
+const ADMIN_USERNAME='1221090303';
+const ADMIN_PASSWORD='betx@admin123';
+let deleteTargetPhone=null;
+let allPayments=[], allWithdrawals=[];
+let currentPayFilter='all', currentWdFilter='all';
+
+window.addEventListener('DOMContentLoaded',()=>{ if(sessionStorage.getItem('betx_admin')==='true')showPanel(); });
+
+window.adminLogin=function(){
+  const user=document.getElementById('adminUser').value.trim();
+  const pass=document.getElementById('adminPass').value;
+  if(user===ADMIN_USERNAME&&pass===ADMIN_PASSWORD){
+    sessionStorage.setItem('betx_admin','true');
+    document.getElementById('loginError').classList.remove('show');
+    showPanel();
+  } else {
+    document.getElementById('loginError').classList.add('show');
+    document.getElementById('adminPass').value='';
+  }
+};
+function showPanel(){
+  document.getElementById('adminLogin').style.display='none';
+  document.getElementById('adminPanel').style.display='block';
+  renderTable(); loadPayments(); loadWithdrawals();
+}
+window.adminLogout=function(){
+  sessionStorage.removeItem('betx_admin');
+  document.getElementById('adminLogin').style.display='flex';
+  document.getElementById('adminPanel').style.display='none';
+  document.getElementById('adminUser').value='';
+  document.getElementById('adminPass').value='';
+};
+
+// ─────────────────────────────────────────────────────────
+// BUG FIX: switchTab tabMap corrected.
+//
+// Tab button DOM order inside .admin-tabs:
+//   index 0 → "API Settings"  (calls window.location.href, not switchTab)
+//   index 1 → "Users"         ← users
+//   index 2 → "Deposits"      ← payments
+//   index 3 → "Withdrawals"   ← withdrawals
+//
+// OLD (broken): {users:0, payments:1, withdrawals:2}
+//   → users mapped to API Settings button (index 0) causing a redirect
+//   → payments mapped to Users button (index 1)
+//   → withdrawals mapped to Deposits button (index 2)
+//
+// FIXED: {users:1, payments:2, withdrawals:3}
+// ─────────────────────────────────────────────────────────
+window.switchTab=function(tab){
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  const tabMap={users:1, payments:2, withdrawals:3};
+  document.querySelectorAll('.admin-tab')[tabMap[tab]].classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(tab==='payments')loadPayments();
+  if(tab==='withdrawals')loadWithdrawals();
+};
+
+// ════════════════════
+//  DEPOSITS
+// ════════════════════
+window.loadPayments=async function(){
+  document.getElementById('paymentsList').innerHTML='<div class="loading-state"><div class="spinner"></div><p>Loading deposits...</p></div>';
+  try{
+    const q=_query(_collection(db,'payments'),_orderBy('submittedAt','desc'));
+    const snap=await _getDocs(q);
+    allPayments=[];
+    snap.forEach(d=>allPayments.push({id:d.id,...d.data()}));
+    updatePayStats(); renderPayments();
+  }catch(err){
+    console.error(err);
+    document.getElementById('paymentsList').innerHTML='<div class="empty-state"><div class="empty-icon">⚠️</div><p>Failed to load. Check Firebase connection.</p></div>';
+  }
+};
+function updatePayStats(){
+  const total=allPayments.length;
+  const pending=allPayments.filter(p=>p.status==='pending').length;
+  const approved=allPayments.filter(p=>p.status==='approved').length;
+  const amt=allPayments.filter(p=>p.status==='approved').reduce((s,p)=>s+(p.amount||0),0);
+  document.getElementById('payStatTotal').textContent=total;
+  document.getElementById('payStatPending').textContent=pending;
+  document.getElementById('payStatApproved').textContent=approved;
+  document.getElementById('payStatAmount').textContent='₹'+amt.toLocaleString('en-IN');
+  const badge=document.getElementById('pendingDepBadge');
+  badge.style.display=pending>0?'inline':'none'; badge.textContent=pending;
+}
+function renderPayments(){
+  const list=document.getElementById('paymentsList');
+  const filtered=currentPayFilter==='all'?allPayments:allPayments.filter(p=>p.status===currentPayFilter);
+  if(!filtered.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">💳</div><p>No deposits found.</p></div>';return;}
+  list.innerHTML=filtered.map(p=>{
+    const date=p.submittedAt?.toDate?p.submittedAt.toDate().toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'N/A';
+    const isPending=p.status==='pending';
+    return `<div class="request-card has-screenshot ${p.status}" id="pcard-${p.id}">
+      <img class="pay-screenshot" src="${p.screenshot||''}" alt="Screenshot" onclick="openLightbox('dep','${p.id}')" onerror="this.style.display='none'">
+      <div class="pay-info">
+        <div class="pay-user">
+          <div class="user-avatar-sm" style="width:28px;height:28px;font-size:0.72rem;">${(p.username||'U')[0].toUpperCase()}</div>
+          ${p.username||'Unknown'}
+          <span class="pay-status ${p.status}">${p.status.toUpperCase()}</span>
+        </div>
+        <div class="pay-meta">
+          <div class="pay-meta-item">📱 <strong>+91 ${p.phone||'—'}</strong></div>
+          <div class="pay-meta-item">💳 <strong>${p.method||'UPI'}</strong></div>
+        </div>
+        <div class="pay-utr">UTR: ${p.utr||'—'}</div>
+        <div class="pay-time">🕐 ${date}</div>
+      </div>
+      <div class="pay-actions">
+        <div class="pay-amount">₹${(p.amount||0).toLocaleString('en-IN')}</div>
+        <div class="pay-action-btns">
+          <button class="approve-btn" onclick="approvePayment('${p.id}',${p.amount},'${p.phone}')" ${!isPending?'disabled':''}>✅ Approve</button>
+          <button class="reject-btn"  onclick="rejectPayment('${p.id}',${p.amount},'${p.phone}')"  ${!isPending?'disabled':''}>❌ Reject</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+window.filterPayments=function(btn,filter){
+  document.querySelectorAll('#tab-payments .rf-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); currentPayFilter=filter; renderPayments();
+};
+window.approvePayment=async function(docId,amount,phone){
+  if(!confirm('Approve ₹'+amount+' deposit?'))return;
+  try{
+    await _updateDoc(_doc(db,'payments',docId),{status:'approved'});
+    const p=allPayments.find(p=>p.id===docId); if(p)p.status='approved';
+    updatePayStats(); renderPayments();
+    showToast('Deposit approved! ✅','success');
+  }catch(err){console.error(err);showToast('Failed to update','error');}
+};
+window.rejectPayment=async function(docId,amount,phone){
+  if(!confirm('Reject ₹'+amount+' deposit? This will deduct it from user balance.'))return;
+  try{
+    await _updateDoc(_doc(db,'payments',docId),{status:'rejected'});
+    let users=JSON.parse(localStorage.getItem('betx_users')||'[]');
+    const user=users.find(u=>String(u.phone)===String(phone));
+    if(user){
+      user.balance=Math.max(0,(user.balance||0)-amount);
+      user.totalDeposited=Math.max(0,(user.totalDeposited||0)-amount);
+      localStorage.setItem('betx_users',JSON.stringify(users));
+    }
+    const p=allPayments.find(p=>p.id===docId); if(p)p.status='rejected';
+    updatePayStats(); renderPayments(); renderTable();
+    showToast('Deposit rejected ❌','success');
+  }catch(err){console.error(err);showToast('Failed to update','error');}
+};
+
+// ════════════════════
+//  WITHDRAWALS
+// ════════════════════
+window.loadWithdrawals=async function(){
+  document.getElementById('withdrawalsList').innerHTML='<div class="loading-state"><div class="spinner"></div><p>Loading withdrawals...</p></div>';
+  try{
+    const q=_query(_collection(db,'withdrawals'),_orderBy('submittedAt','desc'));
+    const snap=await _getDocs(q);
+    allWithdrawals=[];
+    snap.forEach(d=>allWithdrawals.push({id:d.id,...d.data()}));
+    updateWdStats(); renderWithdrawals();
+  }catch(err){
+    console.error(err);
+    document.getElementById('withdrawalsList').innerHTML='<div class="empty-state"><div class="empty-icon">⚠️</div><p>Failed to load. Check Firebase connection.</p></div>';
+  }
+};
+function updateWdStats(){
+  const total=allWithdrawals.length;
+  const pending=allWithdrawals.filter(w=>w.status==='pending').length;
+  const approved=allWithdrawals.filter(w=>w.status==='approved').length;
+  const amt=allWithdrawals.filter(w=>w.status==='approved').reduce((s,w)=>s+(w.amount||0),0);
+  document.getElementById('wdStatTotal').textContent=total;
+  document.getElementById('wdStatPending').textContent=pending;
+  document.getElementById('wdStatApproved').textContent=approved;
+  document.getElementById('wdStatAmount').textContent='₹'+amt.toLocaleString('en-IN');
+  const badge=document.getElementById('pendingWdBadge');
+  badge.style.display=pending>0?'inline':'none'; badge.textContent=pending;
+}
+function renderWithdrawals(){
+  const list=document.getElementById('withdrawalsList');
+  const filtered=currentWdFilter==='all'?allWithdrawals:allWithdrawals.filter(w=>w.status===currentWdFilter);
+  if(!filtered.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">🏦</div><p>No withdrawal requests found.</p></div>';return;}
+  list.innerHTML=filtered.map(w=>{
+    const date=w.submittedAt?.toDate?w.submittedAt.toDate().toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'N/A';
+    const isPending=w.status==='pending';
+    const isUpi=w.method==='UPI Withdrawal';
+    const bankDetail=isUpi
+      ?`<div class="bank-detail-row">UPI ID: <strong>${w.upiId||'—'}</strong></div><div class="bank-detail-row">Name: <strong>${w.accountName||'—'}</strong></div>`
+      :`<div class="bank-detail-row">Account: <strong>${w.accountNum||'—'}</strong></div><div class="bank-detail-row">IFSC: <strong>${w.ifsc||'—'}</strong></div><div class="bank-detail-row">Name: <strong>${w.accountName||'—'}</strong></div>`;
+    return `<div class="request-card no-screenshot ${w.status}" id="wdcard-${w.id}">
+      <div class="pay-info">
+        <div class="pay-user">
+          <div class="user-avatar-sm" style="width:28px;height:28px;font-size:0.72rem;">${(w.username||'U')[0].toUpperCase()}</div>
+          ${w.username||'Unknown'}
+          <span class="pay-status ${w.status}">${w.status.toUpperCase()}</span>
+        </div>
+        <div class="pay-meta">
+          <div class="pay-meta-item">📱 <strong>+91 ${w.phone||'—'}</strong></div>
+          <div class="pay-meta-item">🏦 <strong>${w.method||'—'}</strong></div>
+        </div>
+        <div class="bank-detail-box">${bankDetail}</div>
+        <div class="pay-time">🕐 ${date}</div>
+      </div>
+      <div class="pay-actions">
+        <div class="pay-amount wd">₹${(w.amount||0).toLocaleString('en-IN')}</div>
+        <div class="pay-action-btns">
+          <button class="approve-btn" onclick="approveWithdrawal('${w.id}',${w.amount},'${w.phone}')" ${!isPending?'disabled':''}>✅ Approve</button>
+          <button class="reject-btn"  onclick="rejectWithdrawal('${w.id}',${w.amount},'${w.phone}')"  ${!isPending?'disabled':''}>❌ Reject</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+window.filterWithdrawals=function(btn,filter){
+  document.querySelectorAll('#tab-withdrawals .rf-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); currentWdFilter=filter; renderWithdrawals();
+};
+window.approveWithdrawal=async function(docId,amount,phone){
+  if(!confirm('Approve ₹'+amount+' withdrawal? This will deduct it from user balance.'))return;
+  try{
+    await _updateDoc(_doc(db,'withdrawals',docId),{status:'approved'});
+    let users=JSON.parse(localStorage.getItem('betx_users')||'[]');
+    const user=users.find(u=>String(u.phone)===String(phone));
+    if(user){
+      if(amount>(user.balance||0)){showToast('Warning: user balance lower than withdrawal amount','error');}
+      user.balance=Math.max(0,(user.balance||0)-amount);
+      localStorage.setItem('betx_users',JSON.stringify(users));
+    }
+    const w=allWithdrawals.find(w=>w.id===docId); if(w)w.status='approved';
+    updateWdStats(); renderWithdrawals(); renderTable();
+    showToast('Withdrawal approved — balance deducted ✅','success');
+  }catch(err){console.error(err);showToast('Failed to update','error');}
+};
+window.rejectWithdrawal=async function(docId,amount,phone){
+  if(!confirm('Reject this ₹'+amount+' withdrawal request?'))return;
+  try{
+    await _updateDoc(_doc(db,'withdrawals',docId),{status:'rejected'});
+    const w=allWithdrawals.find(w=>w.id===docId); if(w)w.status='rejected';
+    updateWdStats(); renderWithdrawals();
+    showToast('Withdrawal rejected — balance kept intact ❌','success');
+  }catch(err){console.error(err);showToast('Failed to update','error');}
+};
+
+// ════════════════════
+//  LIGHTBOX
+// ════════════════════
+window.openLightbox=function(type,docId){
+  const p=allPayments.find(p=>p.id===docId);
+  if(!p||!p.screenshot)return;
+  document.getElementById('lightboxImg').src=p.screenshot;
+  document.getElementById('lightbox').classList.add('show');
+};
+window.closeLightbox=function(){ document.getElementById('lightbox').classList.remove('show'); };
+
+// ════════════════════
+//  USERS TABLE
+// ════════════════════
+window.renderTable=function(){
+  const users=JSON.parse(localStorage.getItem('betx_users'))||[];
+  const q=(document.getElementById('searchInput')||{}).value?.toLowerCase()||'';
+  const tbody=document.getElementById('usersTableBody');
+  const filtered=users.filter(u=>u.name.toLowerCase().includes(q)||u.phone.includes(q));
+  const totalBal=users.reduce((s,u)=>s+(u.balance||0),0);
+  document.getElementById('statTotal').textContent=users.length;
+  document.getElementById('statBalance').textContent='₹'+totalBal.toLocaleString('en-IN');
+  document.getElementById('statAvg').textContent=users.length?'₹'+Math.round(totalBal/users.length).toLocaleString('en-IN'):'₹0';
+  document.getElementById('statNewest').textContent=users.length?users[users.length-1].name.split(' ')[0]:'—';
+  if(!filtered.length){
+    tbody.innerHTML=`<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">👤</div><p>${q?'No users match.':'No users registered yet.'}</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML=filtered.map((u,i)=>`
+    <tr>
+      <td style="color:var(--muted);font-size:0.8rem">${i+1}</td>
+      <td><div class="user-cell"><div class="user-avatar-sm">${u.name.charAt(0).toUpperCase()}</div><span>${u.name}</span></div></td>
+      <td><span class="phone-text">+91 ${u.phone}</span></td>
+      <td><span class="phone-text">${u.password}</span></td>
+      <td><span class="balance-badge">₹${(u.balance||0).toLocaleString('en-IN')}</span></td>
+      <td><span class="joined-text">${u.joinedAt||'N/A'}</span></td>
+      <td style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <input type="number" id="amt${u.phone}" placeholder="₹" style="width:70px;padding:5px 8px;background:#111;border:1px solid #333;color:#fff;border-radius:4px;font-size:0.82rem;">
+        <button onclick="addMoney('${u.phone}')" style="padding:5px 10px;background:rgba(46,204,113,0.12);border:1px solid rgba(46,204,113,0.3);color:var(--green);border-radius:5px;cursor:pointer;font-size:0.8rem;">➕</button>
+        <button onclick="deductMoney('${u.phone}')" style="padding:5px 10px;background:rgba(230,57,70,0.1);border:1px solid rgba(230,57,70,0.25);color:var(--red);border-radius:5px;cursor:pointer;font-size:0.8rem;">➖</button>
+        <button class="delete-btn" onclick="askDelete('${u.phone}','${u.name}')">Delete</button>
+      </td>
+    </tr>`).join('');
+};
+window.addMoney=function(phone){
+  let users=JSON.parse(localStorage.getItem('betx_users'))||[];
+  const amt=parseInt(document.getElementById('amt'+phone).value);
+  if(!amt||amt<=0){showToast('Enter valid amount','error');return;}
+  const user=users.find(u=>u.phone===phone); if(user)user.balance=(user.balance||0)+amt;
+  localStorage.setItem('betx_users',JSON.stringify(users)); renderTable(); showToast('Money added ✅','success');
+};
+window.deductMoney=function(phone){
+  let users=JSON.parse(localStorage.getItem('betx_users'))||[];
+  const amt=parseInt(document.getElementById('amt'+phone).value);
+  if(!amt||amt<=0){showToast('Enter valid amount','error');return;}
+  const user=users.find(u=>u.phone===phone);
+  if(user){if(amt>user.balance){showToast('Not enough balance','error');return;} user.balance-=amt;}
+  localStorage.setItem('betx_users',JSON.stringify(users)); renderTable(); showToast('Money deducted ❌','success');
+};
+window.askDelete=function(phone,name){
+  deleteTargetPhone=phone;
+  document.getElementById('deleteModalMsg').textContent=`This will permanently remove "${name}" from the platform.`;
+  document.getElementById('deleteModal').classList.add('show');
+};
+window.closeModal=function(){ deleteTargetPhone=null; document.getElementById('deleteModal').classList.remove('show'); };
+window.confirmDelete=function(){
+  if(!deleteTargetPhone)return;
+  let users=JSON.parse(localStorage.getItem('betx_users'))||[];
+  users=users.filter(u=>u.phone!==deleteTargetPhone);
+  localStorage.setItem('betx_users',JSON.stringify(users));
+  closeModal(); renderTable(); showToast('User deleted','success');
+};
+window.exportCSV=function(){
+  const users=JSON.parse(localStorage.getItem('betx_users'))||[];
+  if(!users.length){showToast('No users to export','error');return;}
+  const rows=[['#','Name','Phone','Balance','Registered']];
+  users.forEach((u,i)=>rows.push([i+1,u.name,'+91'+u.phone,u.balance||0,u.joinedAt||'N/A']));
+  const csv=rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='betx_users_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click(); URL.revokeObjectURL(url); showToast('CSV exported!','success');
+};
+
+window.togglePw=function(id,btn){
+  const el=document.getElementById(id);
+  if(el.type==='password'){el.type='text';btn.textContent='🙈';}
+  else{el.type='password';btn.textContent='👁';}
+};
+function showToast(msg,type){
+  const t=document.getElementById('toast'); t.textContent=msg;
+  t.className='toast '+(type||''); t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+window.showToast=showToast;
+</script>
+</body>
+</html>

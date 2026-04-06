@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BetX — Match</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0f0f0f;--bg2:#161616;--bg3:#1e1e1e;--bg4:#252525;
+  --yellow:#d4e800;--yellow-dim:#a0b000;--yellow-bg:rgba(212,232,0,0.08);
+  --red:#ff3b3b;--green:#1db954;--white:#f0f0f0;--muted:#888;
+  --border:rgba(255,255,255,0.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;}
+
+/* TOPNAV */
+.topnav{height:54px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:14px;position:sticky;top:0;z-index:100;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--yellow);text-shadow:0 0 18px rgba(212,232,0,0.35);}
+.logo span{color:#fff;}
+.back-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:0.8rem;font-family:'Barlow',sans-serif;font-weight:600;transition:all 0.18s;display:flex;align-items:center;gap:6px;}
+.back-btn:hover{border-color:var(--yellow);color:var(--yellow);}
+.nav-bal{margin-left:auto;padding:6px 12px;background:rgba(212,232,0,0.1);border:1px solid rgba(212,232,0,0.3);border-radius:6px;font-size:0.85rem;font-weight:700;color:var(--yellow);}
+
+/* LAYOUT */
+.page-wrap{display:flex;gap:0;min-height:calc(100vh - 54px);}
+.main-col{flex:1;padding:20px;overflow-y:auto;}
+.side-col{width:300px;flex-shrink:0;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;}
+
+/* MATCH HERO */
+.match-hero{background:linear-gradient(135deg,#0d1a00,#1a2800,#0f1a00);border:1px solid rgba(212,232,0,0.15);border-radius:14px;padding:24px;margin-bottom:18px;position:relative;overflow:hidden;}
+.match-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 70% at 50% 50%,rgba(212,232,0,0.06) 0%,transparent 60%);}
+.match-hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(212,232,0,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(212,232,0,0.03) 1px,transparent 1px);background-size:24px 24px;}
+.match-hero-top{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.match-league{font-size:0.72rem;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;display:flex;align-items:center;gap:8px;}
+.live-pill{background:var(--red);color:#fff;font-size:0.6rem;font-weight:800;padding:2px 8px;border-radius:4px;letter-spacing:1px;animation:pulsePill 1.5s infinite;}
+@keyframes pulsePill{0%,100%{opacity:1}50%{opacity:0.7}}
+.match-time-badge{font-size:0.78rem;color:var(--muted);}
+.teams-row{position:relative;z-index:1;display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;}
+.team-block{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;}
+.team-emoji{font-size:2.5rem;line-height:1;}
+.team-name-big{font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;}
+.team-score-big{font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:700;color:var(--yellow);line-height:1;}
+.team-overs{font-size:0.72rem;color:var(--muted);}
+.vs-block{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.vs-text{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--muted);letter-spacing:2px;}
+.match-status-text{font-size:0.72rem;color:var(--yellow);font-weight:600;text-align:center;background:rgba(212,232,0,0.08);padding:4px 10px;border-radius:4px;border:1px solid rgba(212,232,0,0.2);}
+.last-updated{position:relative;z-index:1;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.05);font-size:0.72rem;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.refresh-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.72rem;font-family:'Barlow',sans-serif;transition:all 0.18s;margin-left:auto;}
+.refresh-btn:hover{border-color:var(--yellow);color:var(--yellow);}
+
+/* SCORECARD */
+.section-hdr{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:0.5px;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.scorecard{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:18px;}
+.scorecard table{width:100%;border-collapse:collapse;}
+.scorecard th{padding:9px 14px;font-size:0.65rem;font-weight:700;color:var(--yellow);letter-spacing:1.5px;text-transform:uppercase;text-align:left;background:rgba(212,232,0,0.05);border-bottom:1px solid var(--border);}
+.scorecard td{padding:9px 14px;font-size:0.82rem;border-bottom:1px solid rgba(255,255,255,0.03);}
+.scorecard tr:last-child td{border-bottom:none;}
+.scorecard tr:hover td{background:rgba(255,255,255,0.02);}
+.batsman-name{font-weight:600;}
+.batting-now::after{content:'*';color:var(--yellow);margin-left:2px;}
+.runs-col{color:var(--yellow);font-weight:700;}
+.wicket-col{color:var(--red);}
+
+/* TABS */
+.odds-tabs{display:flex;gap:4px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:4px;margin-bottom:14px;width:fit-content;}
+.odds-tab{padding:7px 18px;background:transparent;border:none;color:var(--muted);font-family:'Barlow',sans-serif;font-size:0.82rem;font-weight:600;border-radius:6px;cursor:pointer;transition:all 0.18s;}
+.odds-tab.active{background:var(--yellow);color:#111;}
+
+/* ODDS CARDS */
+.odds-section{margin-bottom:18px;}
+.odds-market-title{font-size:0.72rem;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;}
+.odds-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;}
+.odd-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:all 0.18s;position:relative;overflow:hidden;}
+.odd-card::before{content:'';position:absolute;inset:0;background:var(--yellow-bg);opacity:0;transition:opacity 0.18s;}
+.odd-card:hover{border-color:rgba(212,232,0,0.4);transform:translateY(-2px);}
+.odd-card:hover::before{opacity:1;}
+.odd-card.selected{border-color:var(--yellow);background:var(--yellow-bg);}
+.odd-card.selected::before{opacity:1;}
+.odd-bookmaker{font-size:0.62rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;position:relative;}
+.odd-team{font-size:0.8rem;font-weight:700;text-align:center;position:relative;}
+.odd-value{font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:700;color:var(--yellow);line-height:1;position:relative;}
+.odd-value.best{color:#1db954;}
+.best-badge{position:absolute;top:6px;right:6px;background:rgba(29,185,84,0.15);border:1px solid rgba(29,185,84,0.3);color:var(--green);font-size:0.55rem;font-weight:800;padding:1px 5px;border-radius:3px;letter-spacing:0.5px;}
+.flash-up{animation:flashUp 0.4s ease;}
+.flash-down{animation:flashDown 0.4s ease;}
+@keyframes flashUp{0%{background:rgba(29,185,84,0.3)}100%{background:transparent}}
+@keyframes flashDown{0%{background:rgba(255,59,59,0.3)}100%{background:transparent}}
+.no-odds{text-align:center;padding:30px;color:var(--muted);font-size:0.88rem;}
+
+/* BETSLIP SIDE */
+.bs-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.bs-title{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;}
+.bs-count{margin-left:auto;font-size:0.7rem;color:var(--muted);}
+.bs-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);padding:24px;text-align:center;}
+.bs-empty-icon{font-size:2.5rem;opacity:0.3;}
+.bs-empty-title{font-weight:700;font-size:0.9rem;color:var(--white);}
+.bs-empty-sub{font-size:0.78rem;line-height:1.5;}
+.bs-items{flex:1;overflow-y:auto;padding:10px 12px;scrollbar-width:none;}
+.bs-items::-webkit-scrollbar{display:none;}
+.bs-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;}
+.bs-item-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.bs-item-market{font-size:0.68rem;color:var(--muted);}
+.bs-item-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;line-height:1;transition:color 0.15s;}
+.bs-item-close:hover{color:var(--red);}
+.bs-item-pick{font-size:0.9rem;font-weight:700;margin-bottom:2px;}
+.bs-item-odd{color:var(--yellow);font-weight:700;font-size:0.9rem;}
+.bs-stake-row{margin-top:10px;display:flex;align-items:center;gap:6px;}
+.stake-label{font-size:0.68rem;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+.stake-input{flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--white);font-family:'Barlow',sans-serif;font-size:0.9rem;font-weight:600;padding:7px 10px;border-radius:6px;outline:none;transition:border-color 0.18s;}
+.stake-input:focus{border-color:var(--yellow);}
+.quick-stakes{display:flex;gap:4px;margin-top:6px;}
+.qs-btn{flex:1;padding:4px;background:var(--bg4);border:1px solid var(--border);color:var(--muted);font-size:0.68rem;font-weight:700;border-radius:4px;cursor:pointer;transition:all 0.15s;font-family:'Barlow',sans-serif;}
+.qs-btn:hover{border-color:var(--yellow);color:var(--yellow);}
+.potential-win{margin-top:8px;font-size:0.78rem;color:var(--muted);display:flex;justify-content:space-between;}
+.potential-win span{color:var(--green);font-weight:700;}
+.bs-footer{padding:12px 14px;border-top:1px solid var(--border);}
+.bs-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:0.82rem;}
+.bs-total-label{color:var(--muted);}
+.bs-total-val{font-weight:700;color:var(--yellow);}
+.place-btn{width:100%;padding:13px;background:var(--yellow);color:#111;font-family:'Barlow',sans-serif;font-size:0.9rem;font-weight:800;border:none;border-radius:8px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all 0.18s;}
+.place-btn:hover{background:#e8ff00;box-shadow:0 0 18px rgba(212,232,0,0.35);}
+.place-btn:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* BET CONFIRM MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.8);backdrop-filter:blur(4px);align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:var(--bg2);border:1px solid rgba(212,232,0,0.2);border-radius:16px;padding:32px 28px;width:360px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.6);}
+.modal-icon{font-size:2.5rem;margin-bottom:14px;}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:800;letter-spacing:0.5px;margin-bottom:6px;}
+.modal-details{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin:16px 0;text-align:left;}
+.modal-detail-row{display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:6px;}
+.modal-detail-row:last-child{margin-bottom:0;}
+.modal-detail-label{color:var(--muted);}
+.modal-detail-val{font-weight:700;}
+.modal-detail-val.yellow{color:var(--yellow);}
+.modal-detail-val.green{color:var(--green);}
+.modal-actions{display:flex;gap:10px;margin-top:6px;}
+.modal-cancel{flex:1;padding:11px;background:transparent;border:1px solid rgba(255,255,255,0.12);color:var(--muted);border-radius:8px;cursor:pointer;font-family:'Barlow',sans-serif;font-size:0.9rem;transition:all 0.2s;}
+.modal-cancel:hover{border-color:var(--white);color:var(--white);}
+.modal-confirm{flex:1;padding:11px;background:var(--yellow);border:none;color:#111;border-radius:8px;cursor:pointer;font-family:'Barlow',sans-serif;font-weight:800;font-size:0.9rem;transition:all 0.2s;}
+.modal-confirm:hover{background:#e8ff00;}
+
+/* SUCCESS OVERLAY */
+.success-overlay{display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.9);backdrop-filter:blur(6px);align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+.success-overlay.show{display:flex;}
+.success-checkmark{font-size:4rem;animation:popIn 0.4s cubic-bezier(.16,1,.3,1);}
+@keyframes popIn{0%{transform:scale(0)}100%{transform:scale(1)}}
+.success-title{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:800;letter-spacing:1px;color:var(--green);}
+.success-sub{color:var(--muted);font-size:0.9rem;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg2);border:1px solid var(--border);color:var(--white);padding:10px 22px;border-radius:8px;font-size:0.85rem;z-index:999;transition:transform 0.3s cubic-bezier(.16,1,.3,1);box-shadow:0 12px 40px rgba(0,0,0,0.5);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.success{border-color:rgba(29,185,84,0.4);color:var(--green);}
+.toast.error{border-color:rgba(255,59,59,0.4);color:var(--red);}
+
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(212,232,0,0.2);border-top-color:var(--yellow);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-box{text-align:center;padding:40px 20px;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<!-- TOPNAV -->
+<nav class="topnav">
+  <div class="logo">BET<span>X</span></div>
+  <button class="back-btn" onclick="window.location.href='dashboard.html'">← Back</button>
+  <div id="matchLeagueNav" style="font-size:0.8rem;color:var(--muted);"></div>
+  <div class="nav-bal"><span id="navBalance">₹0</span></div>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- MAIN COLUMN -->
+  <div class="main-col">
+
+    <!-- MATCH HERO -->
+    <div class="match-hero" id="matchHero">
+      <div class="match-hero-grid"></div>
+      <div class="match-hero-top">
+        <div class="match-league">
+          <span id="heroLeague">Loading...</span>
+          <span class="live-pill" id="livePill" style="display:none">LIVE</span>
+        </div>
+        <div class="match-time-badge" id="matchDateBadge"></div>
+      </div>
+      <div class="teams-row">
+        <div class="team-block">
+          <div class="team-emoji" id="team1Flag">🏏</div>
+          <div class="team-name-big" id="team1Name">—</div>
+          <div class="team-score-big" id="team1Score">—</div>
+          <div class="team-overs" id="team1Overs"></div>
+        </div>
+        <div class="vs-block">
+          <div class="vs-text">VS</div>
+          <div class="match-status-text" id="matchStatusText">Loading...</div>
+        </div>
+        <div class="team-block">
+          <div class="team-emoji" id="team2Flag">🏏</div>
+          <div class="team-name-big" id="team2Name">—</div>
+          <div class="team-score-big" id="team2Score">—</div>
+          <div class="team-overs" id="team2Overs"></div>
+        </div>
+      </div>
+      <div class="last-updated">
+        🕐 Score updated: <span id="lastUpdatedScore">—</span>
+        &nbsp;|&nbsp; Odds updated: <span id="lastUpdatedOdds">—</span>
+        <button class="refresh-btn" onclick="refreshAll()">🔄 Refresh All</button>
+      </div>
+    </div>
+
+    <!-- SCORECARD -->
+    <div id="scorecardSection" style="display:none">
+      <div class="section-hdr">🏏 Live Scorecard</div>
+      <div class="scorecard">
+        <table>
+          <thead><tr><th>Batter</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>SR</th></tr></thead>
+          <tbody id="scorecardBody"></tbody>
+        </table>
+      </div>
+      <div class="scorecard" style="margin-top:8px">
+        <table>
+          <thead><tr><th>Bowler</th><th>O</th><th>M</th><th>R</th><th>W</th><th>ER</th></tr></thead>
+          <tbody id="bowlerBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ODDS -->
+    <div class="section-hdr" style="margin-bottom:10px">💰 Live Betting Odds</div>
+    <div class="odds-tabs">
+      <button class="odds-tab active" onclick="switchOddsTab(this,'h2h')">Win/Lose</button>
+      <button class="odds-tab" onclick="switchOddsTab(this,'totals')">Totals</button>
+      <button class="odds-tab" onclick="switchOddsTab(this,'spreads')">Spreads</button>
+    </div>
+    <div id="oddsContainer">
+      <div class="loading-box"><span class="spinner"></span> Loading odds...</div>
+    </div>
+
+  </div>
+
+  <!-- BETSLIP SIDE -->
+  <aside class="side-col">
+    <div class="bs-header">
+      🎫 <span class="bs-title">Betslip</span>
+      <span class="bs-count" id="bsCount">0 bets</span>
+    </div>
+    <div id="bsEmpty" class="bs-empty">
+      <div class="bs-empty-icon">🎫</div>
+      <div class="bs-empty-title">No bets yet</div>
+      <div class="bs-empty-sub">Click any odds below to add a bet</div>
+    </div>
+    <div id="bsItems" class="bs-items" style="display:none"></div>
+    <div id="bsFooter" class="bs-footer" style="display:none">
+      <div class="bs-total-row"><span class="bs-total-label">Total Stake</span><span class="bs-total-val" id="totalStake">₹0</span></div>
+      <div class="bs-total-row"><span class="bs-total-label">Potential Win</span><span class="bs-total-val" style="color:var(--green)" id="potentialWin">₹0</span></div>
+      <button class="place-btn" onclick="openConfirmModal()">Place Bet →</button>
+    </div>
+  </aside>
+
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <div class="modal-icon">🎯</div>
+    <div class="modal-title">Confirm Bet</div>
+    <div class="modal-details" id="modalDetails"></div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-confirm" onclick="confirmBet()">Confirm & Place</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS OVERLAY -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-checkmark">✅</div>
+  <div class="success-title">Bet Placed!</div>
+  <div class="success-sub" id="successMsg"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──
+const params = new URLSearchParams(window.location.search);
+const matchId = params.get('id');
+const matchName = params.get('name') || '';
+const matchLeague = params.get('league') || 'Cricket';
+
+let bets = [];
+let currentOddsTab = 'h2h';
+let allOddsData = [];
+let scoreRefreshTimer = null;
+let oddsRefreshTimer = null;
+let cricMatchData = null;
+
+// ── INIT ──
+window.addEventListener('DOMContentLoaded', () => {
+  refreshNavBalance();
+  document.getElementById('heroLeague').textContent = matchLeague;
+  document.getElementById('matchLeagueNav').textContent = matchName;
+
+  if (matchName) {
+    const parts = matchName.split(' vs ');
+    if (parts.length === 2) {
+      document.getElementById('team1Name').textContent = parts[0];
+      document.getElementById('team2Name').textContent = parts[1];
+    }
+  }
+
+  const cfg = JSON.parse(localStorage.getItem('betx_api_settings') || '{}');
+
+  // Initial load
+  loadCricScore(cfg);
+  loadOdds(cfg);
+
+  // ─────────────────────────────────────────────────────────
+  // BUG FIX: Score and odds now use SEPARATE timers reading
+  // their own refresh interval from cfg.scoreRefresh and
+  // cfg.oddsRefresh respectively.
+  //
+  // OLD (broken):
+  //   const interval = parseInt(cfg.scoreRefresh || 30000);
+  //   setInterval(loadMatchData, interval);   // loadMatchData called both
+  //   // cfg.oddsRefresh was never read — odds always used scoreRefresh cadence
+  //
+  // FIXED: Two independent setInterval calls, each reading its own config key.
+  // ─────────────────────────────────────────────────────────
+  const scoreMs = parseInt(cfg.scoreRefresh || 30000);
+  const oddsMs  = parseInt(cfg.oddsRefresh  || 30000);
+
+  if (scoreMs > 0) {
+    scoreRefreshTimer = setInterval(() => loadCricScore(cfg), scoreMs);
+  }
+  if (oddsMs > 0) {
+    oddsRefreshTimer = setInterval(() => loadOdds(cfg), oddsMs);
+  }
+
+  // Pause both timers when tab is hidden
+  if (cfg.pauseHidden !== false) {
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        clearInterval(scoreRefreshTimer);
+        clearInterval(oddsRefreshTimer);
+      } else {
+        loadCricScore(cfg);
+        loadOdds(cfg);
+        if (scoreMs > 0) scoreRefreshTimer = setInterval(() => loadCricScore(cfg), scoreMs);
+        if (oddsMs  > 0) oddsRefreshTimer  = setInterval(() => loadOdds(cfg),  oddsMs);
+      }
+    });
+  }
+});
+
+function refreshNavBalance() {
+  const session = sessionStorage.getItem('betx_session');
+  if (!session) return;
+  const { phone } = JSON.parse(session);
+  const users = JSON.parse(localStorage.getItem('betx_users') || '[]');
+  const user = users.find(u => String(u.phone) === String(phone));
+  document.getElementById('navBalance').textContent = '₹' + (user ? (user.balance || 0).toLocaleString('en-IN') : '0');
+}
+
+async function refreshAll() {
+  document.getElementById('lastUpdatedScore').textContent = 'Refreshing...';
+  document.getElementById('lastUpdatedOdds').textContent = 'Refreshing...';
+  const cfg = JSON.parse(localStorage.getItem('betx_api_settings') || '{}');
+  await Promise.all([loadCricScore(cfg), loadOdds(cfg)]);
+}
+
+// ─────────────────────────────────────────────────────────
+// BUG FIX: Always use currentMatches endpoint.
+//
+// OLD (broken):
+//   if (matchId && matchId.length > 10) {
+//     url = `https://api.cricapi.com/v1/match_info?apikey=${key}&id=${matchId}`;
+//   }
+//   The match_info endpoint is NOT available on the free CricAPI plan → silent 404.
+//
+// FIXED: Always call currentMatches and filter the result by matchId from the array.
+// ─────────────────────────────────────────────────────────
+async function loadCricScore(cfg) {
+  const key = cfg.cricApiKey;
+  if (!key || cfg.cricEnabled === false) {
+    updateHeroFromParams();
+    return;
+  }
+  try {
+    // Always use currentMatches — match_info is a paid-only endpoint
+    const url = `https://api.cricapi.com/v1/currentMatches?apikey=${key}&offset=0`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+
+    if (data.status === 'success' && Array.isArray(data.data)) {
+      let match = null;
+      if (matchId) {
+        match = data.data.find(m => m.id === matchId);
+      }
+      // Fallback: if matchId not found (e.g. demo cards), try name match
+      if (!match && matchName) {
+        const parts = matchName.toLowerCase().split(' vs ');
+        match = data.data.find(m => {
+          const n = (m.name || '').toLowerCase();
+          return parts.some(p => n.includes(p.trim()));
+        });
+      }
+      // Last resort: show first match
+      if (!match && data.data.length > 0) match = data.data[0];
+
+      if (match) {
+        cricMatchData = match;
+        renderMatchHero(match);
+        renderScorecard(match);
+      } else {
+        updateHeroFromParams();
+      }
+    }
+  } catch (e) {
+    console.warn('CricAPI error:', e);
+    updateHeroFromParams();
+  }
+  document.getElementById('lastUpdatedScore').textContent = new Date().toLocaleTimeString('en-IN');
+}
+
+function updateHeroFromParams() {
+  const parts = matchName ? matchName.split(' vs ') : [];
+  if (parts.length === 2) {
+    document.getElementById('team1Name').textContent = parts[0];
+    document.getElementById('team2Name').textContent = parts[1];
+    document.getElementById('team1Score').textContent = '—';
+    document.getElementById('team2Score').textContent = '—';
+    document.getElementById('matchStatusText').textContent = 'Live';
+    document.getElementById('livePill').style.display = 'inline';
+    document.getElementById('team1Flag').textContent = getTeamFlag(parts[0]);
+    document.getElementById('team2Flag').textContent = getTeamFlag(parts[1]);
+  }
+}
+
+function getTeamFlag(name) {
+  const flags = {
+    'India':'🇮🇳','Pakistan':'🇵🇰','Australia':'🇦🇺','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+    'South Africa':'🇿🇦','New Zealand':'🇳🇿','West Indies':'🏝️','Sri Lanka':'🇱🇰',
+    'Bangladesh':'🇧🇩','Afghanistan':'🇦🇫','Zimbabwe':'🇿🇼','Ireland':'🇮🇪',
+    'CSK':'🦁','MI':'💙','RCB':'🔴','KKR':'💜','SRH':'🟠','DC':'💙',
+    'PBKS':'🔴','RR':'🩷','LSG':'🟦','GT':'💙',
+  };
+  for (const [key, val] of Object.entries(flags)) {
+    if (name.includes(key)) return val;
+  }
+  return '🏏';
+}
+
+function renderMatchHero(match) {
+  const t1 = match.teams?.[0] || match.teamInfo?.[0]?.name || 'Team 1';
+  const t2 = match.teams?.[1] || match.teamInfo?.[1]?.name || 'Team 2';
+  document.getElementById('team1Name').textContent = t1;
+  document.getElementById('team2Name').textContent = t2;
+  document.getElementById('team1Flag').textContent = getTeamFlag(t1);
+  document.getElementById('team2Flag').textContent = getTeamFlag(t2);
+
+  const scores = match.score || [];
+  if (scores.length > 0) {
+    document.getElementById('team1Score').textContent = `${scores[0]?.r || 0}/${scores[0]?.w || 0}`;
+    document.getElementById('team1Overs').textContent = scores[0]?.o ? `(${scores[0].o} ov)` : '';
+  }
+  if (scores.length > 1) {
+    document.getElementById('team2Score').textContent = `${scores[1]?.r || 0}/${scores[1]?.w || 0}`;
+    document.getElementById('team2Overs').textContent = scores[1]?.o ? `(${scores[1].o} ov)` : '';
+  }
+
+  const isLive = match.matchStarted && !match.matchEnded;
+  document.getElementById('livePill').style.display = isLive ? 'inline' : 'none';
+  document.getElementById('matchStatusText').textContent = match.status || (isLive ? 'Live' : 'Upcoming');
+  document.getElementById('heroLeague').textContent = match.series_id ? (match.series?.name || matchLeague) : matchLeague;
+
+  const dateStr = match.date ? new Date(match.date).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'}) : '';
+  document.getElementById('matchDateBadge').textContent = dateStr;
+}
+
+function renderScorecard(match) {
+  const batting = match.batting || [];
+  const bowling = match.bowling || [];
+  if (!batting.length && !bowling.length) return;
+
+  document.getElementById('scorecardSection').style.display = 'block';
+  const tbody = document.getElementById('scorecardBody');
+  tbody.innerHTML = batting.slice(0, 7).map(b => `
+    <tr>
+      <td class="batsman-name ${b.batting ? 'batting-now' : ''}">${b.batsman || b.name || '—'}</td>
+      <td class="runs-col">${b.r ?? '—'}</td>
+      <td>${b.b ?? '—'}</td>
+      <td>${b['4s'] ?? '—'}</td>
+      <td>${b['6s'] ?? '—'}</td>
+      <td>${b.sr ?? '—'}</td>
+    </tr>`).join('');
+
+  const bbody = document.getElementById('bowlerBody');
+  bbody.innerHTML = bowling.slice(0, 5).map(b => `
+    <tr>
+      <td class="batsman-name">${b.bowler || b.name || '—'}</td>
+      <td>${b.o ?? '—'}</td>
+      <td>${b.m ?? '—'}</td>
+      <td>${b.r ?? '—'}</td>
+      <td class="wicket-col">${b.w ?? '—'}</td>
+      <td>${b.eco ?? '—'}</td>
+    </tr>`).join('');
+}
+
+// ── ODDS — runs on its own timer (cfg.oddsRefresh) ──
+async function loadOdds(cfg) {
+  const key = cfg.oddsApiKey;
+  if (!key || cfg.oddsEnabled === false) {
+    renderOddsFallback();
+    return;
+  }
+  try {
+    const sport = cfg.oddsSport || 'cricket_ipl';
+    const region = cfg.oddsRegion || 'in';
+    const format = cfg.oddsFormat || 'decimal';
+    const market = currentOddsTab;
+
+    const resp = await fetch(
+      `https://api.the-odds-api.com/v4/sports/${sport}/odds/?apikey=${key}&regions=${region}&markets=${market}&oddsFormat=${format}`
+    );
+    if (!resp.ok) throw new Error('API error');
+    const data = await resp.json();
+
+    let event = null;
+    if (matchId) event = data.find(e => e.id === matchId);
+    if (!event && matchName) {
+      const parts = matchName.toLowerCase().split(' vs ');
+      event = data.find(e => {
+        const hn = e.home_team?.toLowerCase() || '';
+        const an = e.away_team?.toLowerCase() || '';
+        return parts.some(p => hn.includes(p) || an.includes(p));
+      });
+    }
+    if (!event && data.length > 0) event = data[0];
+
+    allOddsData = event ? event.bookmakers || [] : [];
+    renderOdds(cfg);
+    document.getElementById('lastUpdatedOdds').textContent = new Date().toLocaleTimeString('en-IN');
+  } catch (e) {
+    console.warn('Odds API error:', e);
+    renderOddsFallback();
+  }
+}
+
+function renderOdds(cfg) {
+  const container = document.getElementById('oddsContainer');
+  if (!allOddsData.length) { renderOddsFallback(); return; }
+
+  const bestOdds = {};
+  allOddsData.forEach(bm => {
+    bm.markets?.forEach(mkt => {
+      if (mkt.key === currentOddsTab) {
+        mkt.outcomes?.forEach(o => {
+          if (!bestOdds[o.name] || o.price > bestOdds[o.name]) bestOdds[o.name] = o.price;
+        });
+      }
+    });
+  });
+
+  const showBestOnly = cfg.oddsBest !== false;
+
+  if (showBestOnly) {
+    container.innerHTML = `
+      <div class="odds-section">
+        <div class="odds-market-title">Best Available Odds</div>
+        <div class="odds-grid">
+          ${Object.entries(bestOdds).map(([team, price]) => `
+            <div class="odd-card" onclick="addToBetslip('${team}', ${price}, 'Best Odds')">
+              <span class="best-badge">BEST</span>
+              <span class="odd-team">${team}</span>
+              <span class="odd-value best">${price.toFixed(2)}</span>
+              <span class="odd-bookmaker">Click to bet</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="odds-section" style="margin-top:16px">
+        <div class="odds-market-title">All Bookmakers</div>
+        ${allOddsData.map(bm => {
+          const mkt = bm.markets?.find(m => m.key === currentOddsTab);
+          if (!mkt) return '';
+          return `
+            <div style="margin-bottom:10px">
+              <div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">${bm.title}</div>
+              <div class="odds-grid">
+                ${mkt.outcomes?.map(o => {
+                  const isBest = o.price === bestOdds[o.name];
+                  return `<div class="odd-card" onclick="addToBetslip('${o.name}', ${o.price}, '${bm.title}')">
+                    ${isBest ? '<span class="best-badge">BEST</span>' : ''}
+                    <span class="odd-team">${o.name}</span>
+                    <span class="odd-value ${isBest ? 'best' : ''}">${o.price.toFixed(2)}</span>
+                    <span class="odd-bookmaker">${bm.title}</span>
+                  </div>`;
+                }).join('')}
+              </div>
+            </div>`;
+        }).join('')}
+      </div>`;
+  } else {
+    container.innerHTML = allOddsData.map(bm => {
+      const mkt = bm.markets?.find(m => m.key === currentOddsTab);
+      if (!mkt) return '';
+      return `
+        <div class="odds-section">
+          <div class="odds-market-title">${bm.title}</div>
+          <div class="odds-grid">
+            ${mkt.outcomes?.map(o => `
+              <div class="odd-card" onclick="addToBetslip('${o.name}', ${o.price}, '${bm.title}')">
+                <span class="odd-team">${o.name}</span>
+                <span class="odd-value">${o.price.toFixed(2)}</span>
+                <span class="odd-bookmaker">${bm.title}</span>
+              </div>`).join('')}
+          </div>
+        </div>`;
+    }).join('') || '<div class="no-odds">No odds available for this market</div>';
+  }
+}
+
+function renderOddsFallback() {
+  const parts = matchName ? matchName.split(' vs ') : ['Team 1', 'Team 2'];
+  const t1 = parts[0] || 'Team 1';
+  const t2 = parts[1] || 'Team 2';
+  document.getElementById('oddsContainer').innerHTML = `
+    <div class="odds-section">
+      <div class="odds-market-title">Match Winner (No API Key — Sample)</div>
+      <div class="odds-grid">
+        <div class="odd-card" onclick="addToBetslip('${t1}', 1.85, 'BetX')">
+          <span class="odd-team">${t1}</span>
+          <span class="odd-value">1.85</span>
+          <span class="odd-bookmaker">BetX</span>
+        </div>
+        <div class="odd-card" onclick="addToBetslip('Draw', 3.20, 'BetX')">
+          <span class="odd-team">Draw</span>
+          <span class="odd-value">3.20</span>
+          <span class="odd-bookmaker">BetX</span>
+        </div>
+        <div class="odd-card" onclick="addToBetslip('${t2}', 2.10, 'BetX')">
+          <span class="odd-team">${t2}</span>
+          <span class="odd-value">2.10</span>
+          <span class="odd-bookmaker">BetX</span>
+        </div>
+      </div>
+      <p style="font-size:0.75rem;color:var(--muted);margin-top:10px;">⚠️ Add Odds API key in Admin → API Settings to show real odds.</p>
+    </div>`;
+}
+
+function switchOddsTab(btn, tab) {
+  document.querySelectorAll('.odds-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  currentOddsTab = tab;
+  const cfg = JSON.parse(localStorage.getItem('betx_api_settings') || '{}');
+  if (allOddsData.length) renderOdds(cfg);
+  else loadOdds(cfg);
+}
+
+// ── BETSLIP ──
+function addToBetslip(team, odd, bookmaker) {
+  const existing = bets.find(b => b.team === team && b.bookmaker === bookmaker);
+  if (existing) { showToast('Already in betslip', 'error'); return; }
+  bets.push({ match: matchName || 'Match', team, odd: parseFloat(odd), bookmaker, stake: 100 });
+  renderBetslip();
+  showToast(`${team} @ ${parseFloat(odd).toFixed(2)} added!`, 'success');
+}
+
+function removeBet(i) {
+  bets.splice(i, 1);
+  renderBetslip();
+}
+
+function updateStake(i, val) {
+  bets[i].stake = parseFloat(val) || 0;
+  renderBetslip();
+}
+
+function setQuickStake(i, amt) {
+  bets[i].stake = amt;
+  renderBetslip();
+}
+
+function renderBetslip() {
+  const empty = document.getElementById('bsEmpty');
+  const items = document.getElementById('bsItems');
+  const footer = document.getElementById('bsFooter');
+  document.getElementById('bsCount').textContent = bets.length + ' bet' + (bets.length !== 1 ? 's' : '');
+
+  if (!bets.length) {
+    empty.style.display = 'flex'; items.style.display = 'none'; footer.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none'; items.style.display = 'block'; footer.style.display = 'block';
+
+  items.innerHTML = bets.map((b, i) => `
+    <div class="bs-item">
+      <div class="bs-item-top">
+        <div class="bs-item-market">${b.match} · ${b.bookmaker}</div>
+        <button class="bs-item-close" onclick="removeBet(${i})">✕</button>
+      </div>
+      <div class="bs-item-pick">${b.team}</div>
+      <div class="bs-item-odd">@ ${b.odd.toFixed(2)}</div>
+      <div class="bs-stake-row">
+        <span class="stake-label">₹</span>
+        <input class="stake-input" type="number" value="${b.stake}" min="10" oninput="updateStake(${i},this.value)">
+      </div>
+      <div class="quick-stakes">
+        ${[100,500,1000,5000].map(a => `<button class="qs-btn" onclick="setQuickStake(${i},${a})">₹${a>=1000?a/1000+'K':a}</button>`).join('')}
+      </div>
+      <div class="potential-win">Win: <span>₹${(b.stake * b.odd).toFixed(0)}</span></div>
+    </div>`).join('');
+
+  const totalStake = bets.reduce((s, b) => s + b.stake, 0);
+  const totalWin = bets.reduce((s, b) => s + b.stake * b.odd, 0);
+  document.getElementById('totalStake').textContent = '₹' + totalStake.toFixed(0);
+  document.getElementById('potentialWin').textContent = '₹' + totalWin.toFixed(0);
+}
+
+// ── PLACE BET ──
+function openConfirmModal() {
+  if (!bets.length) return;
+  const session = sessionStorage.getItem('betx_session');
+  if (!session) { showToast('Please login to place bets', 'error'); return; }
+
+  const totalStake = bets.reduce((s, b) => s + b.stake, 0);
+  const totalWin = bets.reduce((s, b) => s + b.stake * b.odd, 0);
+  const { phone } = JSON.parse(session);
+  const users = JSON.parse(localStorage.getItem('betx_users') || '[]');
+  const user = users.find(u => String(u.phone) === String(phone));
+  const balance = user ? (user.balance || 0) : 0;
+
+  if (totalStake > balance) {
+    showToast(`Insufficient balance. You have ₹${balance.toLocaleString('en-IN')}`, 'error');
+    return;
+  }
+
+  document.getElementById('modalDetails').innerHTML = `
+    ${bets.map(b => `
+      <div class="modal-detail-row">
+        <span class="modal-detail-label">${b.team}</span>
+        <span class="modal-detail-val yellow">@ ${b.odd.toFixed(2)}</span>
+      </div>
+      <div class="modal-detail-row">
+        <span class="modal-detail-label">Stake</span>
+        <span class="modal-detail-val">₹${b.stake.toLocaleString('en-IN')}</span>
+      </div>`).join('<hr style="border-color:rgba(255,255,255,0.05);margin:6px 0;">')}
+    <hr style="border-color:rgba(255,255,255,0.05);margin:8px 0;">
+    <div class="modal-detail-row">
+      <span class="modal-detail-label">Total Stake</span>
+      <span class="modal-detail-val">₹${totalStake.toLocaleString('en-IN')}</span>
+    </div>
+    <div class="modal-detail-row">
+      <span class="modal-detail-label">Potential Win</span>
+      <span class="modal-detail-val green">₹${totalWin.toFixed(0)}</span>
+    </div>
+    <div class="modal-detail-row">
+      <span class="modal-detail-label">Balance After</span>
+      <span class="modal-detail-val">₹${(balance - totalStake).toLocaleString('en-IN')}</span>
+    </div>`;
+
+  document.getElementById('confirmModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('confirmModal').classList.remove('show');
+}
+
+function confirmBet() {
+  const session = sessionStorage.getItem('betx_session');
+  if (!session) return;
+  const { phone } = JSON.parse(session);
+  let users = JSON.parse(localStorage.getItem('betx_users') || '[]');
+  const userIdx = users.findIndex(u => String(u.phone) === String(phone));
+  if (userIdx === -1) return;
+
+  const totalStake = bets.reduce((s, b) => s + b.stake, 0);
+  users[userIdx].balance = Math.max(0, (users[userIdx].balance || 0) - totalStake);
+  localStorage.setItem('betx_users', JSON.stringify(users));
+
+  closeModal();
+
+  const totalWin = bets.reduce((s, b) => s + b.stake * b.odd, 0);
+  document.getElementById('successMsg').textContent = `₹${totalStake} staked · Potential win ₹${totalWin.toFixed(0)}`;
+  document.getElementById('successOverlay').classList.add('show');
+
+  bets = [];
+  renderBetslip();
+  refreshNavBalance();
+
+  setTimeout(() => {
+    document.getElementById('successOverlay').classList.remove('show');
+  }, 2500);
+}
+
+// ── TOAST ──
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + (type || '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
